@@ -25,6 +25,9 @@
 		<java.version>11</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<springboot.version>1.3.2.RELEASE</springboot.version>
+		<hibernate.version>5.4.24.Final</hibernate.version>
+		<lambok.version>1.18.28</lambok.version>
+		<postgresql.version>42.3.8</postgresql.version>
 	</properties>
 
 	<dependencyManagement>
@@ -32,12 +35,19 @@
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-parent</artifactId>
+				<version>${springboot.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.28</version>
+				<version>${lombok.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>${postgresql.version}</version>
 			</dependency>
 
 		</dependencies>
