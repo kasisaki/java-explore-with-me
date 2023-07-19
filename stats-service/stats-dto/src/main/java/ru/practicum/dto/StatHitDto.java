@@ -19,7 +19,7 @@ public class StatHitDto {
     private String uri;
 
     @NotEmpty
-    private String IP;
+    private String ip;
 
     @NotEmpty
     private String app;

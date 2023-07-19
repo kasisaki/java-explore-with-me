@@ -23,11 +23,11 @@ public class StatController {
 
     @GetMapping("/stats")
     public ResponseEntity<List<StatResponseDto>> getStatistics(@RequestParam(name = "start") LocalDateTime start,
-                                                         @RequestParam(name = "end") LocalDateTime end,
-                                                         @RequestParam(name = "unique", required = false,
-                                                                 defaultValue = "false") Boolean unique,
-                                                         @RequestParam(name = "uris") List<String> uris,
-                                                         HttpServletRequest request) {
+                                                               @RequestParam(name = "end") LocalDateTime end,
+                                                               @RequestParam(name = "unique", required = false,
+                                                                       defaultValue = "false") Boolean unique,
+                                                               @RequestParam(name = "uris") List<String> uris,
+                                                               HttpServletRequest request) {
         log.info(
                 "GET Statistics request:" +
                         "\n     For Uris:    {}," +
@@ -49,7 +49,7 @@ public class StatController {
                         "\n     IP:          {}," +
                         "\n     access time: {}," +
                         "\n     from IP:     {}",
-                hit.getUri(), hit.getApp(), hit.getIP(), hit.getTimestamp(), request.getRemoteAddr());
+                hit.getUri(), hit.getApp(), hit.getIp(), hit.getTimestamp(), request.getRemoteAddr());
         service.hit(hit);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

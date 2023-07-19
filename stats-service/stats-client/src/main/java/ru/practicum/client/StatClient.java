@@ -10,7 +10,6 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.dto.StatHitDto;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class StatClient extends BaseClient {
@@ -33,9 +32,9 @@ public class StatClient extends BaseClient {
     public ResponseEntity<Object> getStats(String start, String end, Boolean unique, List<String> uris) {
         String urisString = "";
         if (!(uris == null) && !uris.isEmpty()) {
-            urisString = "&uris="+ String.join("&uris=", uris);
+            urisString = "&uris=" + String.join("&uris=", uris);
         }
 
-        return get("/stats?start=" + start + "&end=" + end + "&unique=" + unique  + urisString);
+        return get("/stats?start=" + start + "&end=" + end + "&unique=" + unique + urisString);
     }
 }
