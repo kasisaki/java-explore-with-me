@@ -22,8 +22,8 @@ public class StatData {
     @Column(name = "uri")
     private String uri;
 
-    @Column(name = "IP")
-    private String IP;
+    @Column(name = "ip")
+    private String ip;
 
     @Column(name = "app")
     private String app;

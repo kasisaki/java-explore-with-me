@@ -9,7 +9,7 @@ public class StatMapper {
                 .app(hit.getApp())
                 .uri(hit.getUri())
                 .created(hit.getTimestamp())
-                .IP(hit.getIp())
+                .ip(hit.getIp())
                 .build();
     }
 }
