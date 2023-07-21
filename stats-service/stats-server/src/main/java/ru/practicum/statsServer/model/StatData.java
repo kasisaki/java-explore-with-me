@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Builder
+@Table(name = "stats_data")
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class StatData {
