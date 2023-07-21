@@ -1,17 +1,17 @@
+
 spring:
   jpa:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQL10Dialect
         format_sql: 'true'
-        show_sql: 'true'
     hibernate:
       ddl-auto: create-drop
   datasource:
     driverClassName: org.postgresql.Driver
     username: postgres
     password: test
-    url: jdbc:postgresql://localhost:5432/psql_ewm
+    url: jdbc:postgresql://localhost:5432/main-db
   sql:
     init:
       mode: always
@@ -22,11 +22,10 @@ logging:
         orm:
           jpa:
             JpaTransactionManager: DEBUG
-            nodeValue: DEBUG
+            nodeValue: INFO
         transaction:
           interceptor: TRACE
           nodeValue: INFO
-        boot: DEBUG
 
 server:
   port: 9090
