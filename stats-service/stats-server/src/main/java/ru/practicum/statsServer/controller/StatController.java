@@ -2,6 +2,7 @@ package ru.practicum.statsServer.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,12 +23,13 @@ public class StatController {
     private final StatService service;
 
     @GetMapping("/stats")
-    public ResponseEntity<List<StatResponseDto>> getStatistics(@RequestParam(name = "start") LocalDateTime start,
-                                                               @RequestParam(name = "end") LocalDateTime end,
-                                                               @RequestParam(name = "unique", required = false,
-                                                                       defaultValue = "false") Boolean unique,
-                                                               @RequestParam(name = "uris") List<String> uris,
-                                                               HttpServletRequest request) {
+    public ResponseEntity<List<StatResponseDto>> getStatistics(
+            @RequestParam(name = "start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+            @RequestParam(name = "end")
+            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
+            @RequestParam(name = "unique", required = false, defaultValue = "false") Boolean unique,
+            @RequestParam(name = "uris") List<String> uris,
+            HttpServletRequest request) {
         log.info(
                 "GET Statistics request:" +
                         "\n     For Uris:    {}," +
