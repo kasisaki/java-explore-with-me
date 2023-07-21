@@ -26,7 +26,7 @@ logging:
         transaction:
           interceptor: TRACE
           nodeValue: INFO
-        boot: DEBUG
+        boot: INFO
 
 server:
   port: 9090
