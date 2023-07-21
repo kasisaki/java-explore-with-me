@@ -28,7 +28,7 @@ public class StatController {
             @RequestParam(name = "end")
             @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
             @RequestParam(name = "unique", required = false, defaultValue = "false") Boolean unique,
-            @RequestParam(name = "uris") List<String> uris,
+            @RequestParam(name = "uris", required = false) List<String> uris,
             HttpServletRequest request) {
         log.info(
                 "GET Statistics request:" +
