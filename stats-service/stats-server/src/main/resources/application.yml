@@ -1,0 +1,32 @@
+spring:
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL10Dialect
+        format_sql: 'true'
+        show_sql: 'true'
+    hibernate:
+      ddl-auto: create-drop
+  datasource:
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: password
+    url: jdbc:postgresql://localhost:5432/psql_ewm
+  sql:
+    init:
+      mode: always
+logging:
+  level:
+    org:
+      springframework:
+        orm:
+          jpa:
+            JpaTransactionManager: DEBUG
+            nodeValue: DEBUG
+        transaction:
+          interceptor: TRACE
+          nodeValue: INFO
+        boot: INFO
+
+server:
+  port: 9090
