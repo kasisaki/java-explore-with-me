@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import static ru.practicum.utils.Constants.DATE_PATTERN;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -25,6 +27,6 @@ public class StatHitDto {
     private String app;
 
     @NotNull
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DATE_PATTERN)
     private String timestamp;
 }

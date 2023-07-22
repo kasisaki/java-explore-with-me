@@ -15,6 +15,8 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static ru.practicum.utils.Constants.DATE_PATTERN;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -24,9 +26,9 @@ public class StatController {
 
     @GetMapping("/stats")
     public ResponseEntity<List<StatResponseDto>> getStatistics(
-            @RequestParam(name = "start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+            @RequestParam(name = "start") @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime start,
             @RequestParam(name = "end")
-            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
+            @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime end,
             @RequestParam(name = "unique", required = false, defaultValue = "false") Boolean unique,
             @RequestParam(name = "uris", required = false) List<String> uris,
             HttpServletRequest request) {
