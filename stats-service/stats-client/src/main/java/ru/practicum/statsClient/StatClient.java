@@ -1,4 +1,4 @@
-package ru.practicum.client;
+package ru.practicum.statsClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +16,7 @@ public class StatClient extends BaseClient {
     private static final String API_PREFIX = "/requests";
 
     @Autowired
-    public StatClient(@Value("${shareit-server.url}") String serverUrl, RestTemplateBuilder builder) {
+    public StatClient(@Value("http://localhost:9090") String serverUrl, RestTemplateBuilder builder) {
         super(
                 builder
                         .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl + API_PREFIX))

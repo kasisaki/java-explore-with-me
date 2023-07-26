@@ -25,6 +25,8 @@ public class Compilation {
     @Column
     private String title;
 
-    @Transient
-    private Set<Event> events;
+    @ManyToMany
+    @JoinTable(name = "compilation_of_events", joinColumns = {@JoinColumn(name = "compilation_id")},
+            inverseJoinColumns = {@JoinColumn(name = "event_id")})
+    Set<Event> events;
 }

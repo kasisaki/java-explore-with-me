@@ -3,8 +3,8 @@ package ru.practicum.mainService.utils.enums;
 import ru.practicum.mainService.utils.exceptions.IllegalStatusException;
 
 public enum StatusEnum {
-    WAITING,
-    CONFIRMED,
+    PENDING,
+    PUBLISHED,
     REJECTED,
     CANCELED;
 
@@ -12,12 +12,12 @@ public enum StatusEnum {
         switch (str) {
             case "REJECTED":
                 return REJECTED;
-            case "CONFIRMED":
-                return CONFIRMED;
+            case "PUBLISHED":
+                return PUBLISHED;
             case "CANCELED":
                 return CANCELED;
-            case "WAITING":
-                return WAITING;
+            case "PENDING":
+                return PENDING;
             default:
                 throw new IllegalStatusException("Unknown state: UNSUPPORTED_STATUS");
         }

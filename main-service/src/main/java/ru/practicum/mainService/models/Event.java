@@ -1,6 +1,7 @@
 package ru.practicum.mainService.models;
 
 import lombok.Data;
+import ru.practicum.mainService.utils.enums.StatusEnum;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -51,4 +52,10 @@ public class Event {
     @Column
     private String title;
 
+    @Column
+    @Enumerated(EnumType.STRING)
+    private StatusEnum state;
+
+    @Column
+    private LocalDateTime publishedOn;
 }
