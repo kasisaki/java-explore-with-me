@@ -48,6 +48,15 @@ public class EventService {
                 .stream()
                 .map(EventMapper::toEventDto)
                 .collect(Collectors.toList());
+        var x = statClient.getStats(fromDate.toString(), toDate.toString(), false, events.stream()
+                .map(EventFullDto::getId)
+                .map(Object::toString)
+                .map(s -> "/events/" + s)
+                .collect(Collectors.toList())).getBody();
+        assert x != null;
+        System.out.println(x);
+        //List<String> statDataList = new Gson().fromJson((String) x, List.class);
+        //List<StatResponseDto> dataList = statDataList.stream().map(s -> new Gson().fromJson(s, StatResponseDto.class)).collect(Collectors.toList());
 
 
         return null;

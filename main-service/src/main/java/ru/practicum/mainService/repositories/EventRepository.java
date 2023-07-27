@@ -18,9 +18,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Set<Event> findAllByIdIn(Set<Long> ids);
 
     @Query("SELECT e FROM Event e WHERE " +
-            "(e.initiator.id IN (:userIds) OR :userIds IS NULL) AND " +
-            "(e.state IN (:states) OR :states IS NULL) AND " +
-            "(e.category.id IN (:categories) OR :categories IS NULL) AND " +
+            "(e.initiator.id IN :userIds OR :userIds IS NULL) AND " +
+            "(e.state IN :states OR :states IS NULL) AND " +
+            "(e.category.id IN :categories OR :categories IS NULL) AND " +
             "(e.eventDate BETWEEN :fromDate AND :toDate OR :fromDate IS NULL OR :toDate IS NULL)")
     Page<Event> getFullEventsFiltered(Pageable pageable,
                                       @Param("userIds") Set<Long> userIds,
