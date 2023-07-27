@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
+import static ru.practicum.utils.Constants.DATE_PATTERN;
+
 @Slf4j
 @Validated
 @RestController
@@ -27,15 +29,14 @@ import java.util.Set;
 @RequestMapping("/admin/events")
 public class AdminEventController {
 
-    private static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     private final EventService eventService;
 
     @GetMapping
     public ResponseEntity<List<EventFullDto>> getEvents(@RequestParam(name = "users", required = false) Set<Long> users,
                                                         @RequestParam(name = "states", required = false) List<StatusEnum> states,
                                                         @RequestParam(name = "categories", required = false) List<Long> categories,
-                                                        @RequestParam(name = "rangeStart", required = false) @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime rangeStart,
-                                                        @RequestParam(name = "rangeEnd", required = false) @DateTimeFormat(pattern = DATE_TIME_FORMAT) LocalDateTime rangeEnd,
+                                                        @RequestParam(name = "rangeStart", required = false, defaultValue = "2000-09-06 00:00:00") @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeStart,
+                                                        @RequestParam(name = "rangeEnd", required = false, defaultValue = "3000-09-06 00:00:00") @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeEnd,
                                                         @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
                                                         @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         log.info("Get events with \nusers: {}, \nstates: {}, \ncategories: {}, \nrangeStart: {}, \nrangeEnd: {}, " +

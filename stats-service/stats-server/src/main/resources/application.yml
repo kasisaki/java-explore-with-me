@@ -6,12 +6,12 @@ spring:
         format_sql: 'true'
         show_sql: 'true'
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
   datasource:
     driverClassName: org.postgresql.Driver
     username: postgres
     password: password
-    url: jdbc:postgresql://localhost:5432/psql_ewm
+    url: jdbc:postgresql://localhost:5432/stats-db
   sql:
     init:
       mode: always

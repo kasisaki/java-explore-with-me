@@ -11,9 +11,9 @@ import java.util.Set;
 @Data
 @Entity
 @Builder
-@Table(name = "compilations")
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "compilations")
 public class Compilation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -21,12 +21,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "(e.initiator.id IN :userIds OR :userIds IS NULL) AND " +
             "(e.state IN :states OR :states IS NULL) AND " +
             "(e.category.id IN :categories OR :categories IS NULL) AND " +
-            "(e.eventDate BETWEEN :fromDate AND :toDate OR :fromDate IS NULL OR :toDate IS NULL)")
-    Page<Event> getFullEventsFiltered(Pageable pageable,
-                                      @Param("userIds") Set<Long> userIds,
+            "(e.eventDate BETWEEN :fromDate AND :toDate)")
+    Page<Event> getFullEventsFiltered(@Param("userIds") Set<Long> userIds,
                                       @Param("states") List<StatusEnum> states,
                                       @Param("categories") List<Long> categories,
                                       @Param("fromDate") LocalDateTime fromDate,
-                                      @Param("toDate") LocalDateTime toDate);
+                                      @Param("toDate") LocalDateTime toDate,
+                                      Pageable pageable);
 
 }

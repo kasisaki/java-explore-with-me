@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "event_id")
+    @Column(name = "id")
     private Long id;
 
     @Column(length = 2000, nullable = false)
@@ -29,7 +29,7 @@ public class Event {
     @Column
     private LocalDateTime createdOn;
 
-    @Column(name = "event_date", nullable = false)
+    @Column(name = "event_date")
     private LocalDateTime eventDate;
 
     @ManyToOne

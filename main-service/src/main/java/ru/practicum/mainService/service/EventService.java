@@ -1,8 +1,11 @@
 package ru.practicum.mainService.service;
 
+import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import ru.practicum.dto.StatResponseDto;
 import ru.practicum.mainService.dto.event.EventFullDto;
 import ru.practicum.mainService.dto.event.EventShortDto;
 import ru.practicum.mainService.mappers.EventMapper;
@@ -17,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class EventService {
@@ -44,20 +48,36 @@ public class EventService {
                                             LocalDateTime fromDate, LocalDateTime toDate, Integer pagingFrom,
                                             Integer pagingSize) {
         List<EventFullDto> events = eventRepository.getFullEventsFiltered(
-                        PageRequest.of(pagingFrom, pagingSize), userIds, states, categories, fromDate, toDate)
+                        userIds, states, categories, fromDate, toDate, PageRequest.of(pagingFrom, pagingSize))
                 .stream()
                 .map(EventMapper::toEventDto)
                 .collect(Collectors.toList());
-        var x = statClient.getStats(fromDate.toString(), toDate.toString(), false, events.stream()
+        Object body = statClient.getStats(fromDate.toString(), toDate.toString(), false, events.stream()
+                .map(EventFullDto::getId)
+                .map(Object::toString)
+                        .map(s -> {
+                            System.out.println("the map content " + s); return s;
+                        })
+                .map(s -> "/events/" + s)
+                .collect(Collectors.toList())).getBody();
+        if (body instanceof String) {
+            String bodyString = (String) body;
+            System.out.println(bodyString);
+            System.out.println("got string");
+        } else if (body instanceof byte[]) {
+            byte[] bodyBytes = (byte[]) body;
+            System.out.println(new String(bodyBytes));
+            System.out.println("got bites");
+        } else {
+            System.out.println("else happened");
+            // Handle other types of body content as needed
+        }
+
+        log.warn(events.stream()
                 .map(EventFullDto::getId)
                 .map(Object::toString)
                 .map(s -> "/events/" + s)
-                .collect(Collectors.toList())).getBody();
-        assert x != null;
-        System.out.println(x);
-        //List<String> statDataList = new Gson().fromJson((String) x, List.class);
-        //List<StatResponseDto> dataList = statDataList.stream().map(s -> new Gson().fromJson(s, StatResponseDto.class)).collect(Collectors.toList());
-
+                .collect(Collectors.toList()).toString());
 
         return null;
     }
