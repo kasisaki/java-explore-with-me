@@ -13,13 +13,12 @@ import java.util.List;
 
 @Service
 public class StatClient extends BaseClient {
-    private static final String API_PREFIX = "/requests";
 
     @Autowired
     public StatClient(@Value("http://localhost:9090") String serverUrl, RestTemplateBuilder builder) {
         super(
                 builder
-                        .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl + API_PREFIX))
+                        .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
                         .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                         .build()
         );
@@ -36,5 +35,14 @@ public class StatClient extends BaseClient {
         }
 
         return get("/stats?start=" + start + "&end=" + end + "&unique=" + unique + urisString);
+    }
+
+    public ResponseEntity<Object> getEventViews(List<String> uris) {
+        String urisString = "";
+        if (!(uris == null) && !uris.isEmpty()) {
+            urisString = "&uris=" + String.join("&uris=", uris);
+        }
+
+        return get("/stats/hits?" + urisString);
     }
 }

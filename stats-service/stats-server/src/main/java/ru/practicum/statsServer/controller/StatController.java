@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static ru.practicum.utils.Constants.DATE_PATTERN;
 
@@ -40,6 +41,12 @@ public class StatController {
                         "\n     from IP:     {}",
                 uris, start, end, unique, request.getRemoteAddr());
         return new ResponseEntity<>(service.getStatistics(start, end, unique, uris), HttpStatus.OK);
+    }
+
+    @GetMapping("/stats/hits")
+    public ResponseEntity<Map<Long, Long>> getViewsOfEvent(@RequestParam(name = "uris") List<String> uris) {
+        System.out.println(uris);
+        return new ResponseEntity<>(service.getHitsOfEvent(uris), HttpStatus.OK);
     }
 
     @PostMapping("/hit")

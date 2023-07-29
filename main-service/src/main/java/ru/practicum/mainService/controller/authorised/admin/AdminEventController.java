@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-import static ru.practicum.utils.Constants.DATE_PATTERN;
+import static ru.practicum.utils.Constants.*;
 
 @Slf4j
 @Validated
@@ -32,16 +32,22 @@ public class AdminEventController {
     private final EventService eventService;
 
     @GetMapping
-    public ResponseEntity<List<EventFullDto>> getEvents(@RequestParam(name = "users", required = false) Set<Long> users,
-                                                        @RequestParam(name = "states", required = false) List<StatusEnum> states,
-                                                        @RequestParam(name = "categories", required = false) List<Long> categories,
-                                                        @RequestParam(name = "rangeStart", required = false, defaultValue = "2000-09-06 00:00:00") @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeStart,
-                                                        @RequestParam(name = "rangeEnd", required = false, defaultValue = "3000-09-06 00:00:00") @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeEnd,
-                                                        @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
-                                                        @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+    public ResponseEntity<List<EventFullDto>> getEvents(
+            @RequestParam(name = "users", required = false) Set<Long> users,
+            @RequestParam(name = "states", required = false) List<StatusEnum> states,
+            @RequestParam(name = "categories", required = false) List<Long> categories,
+            @RequestParam(name = "rangeStart", required = false, defaultValue = START_DATE)
+            @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeStart,
+            @RequestParam(name = "rangeEnd", required = false, defaultValue = END_DATE)
+            @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeEnd,
+            @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+            @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
+
         log.info("Get events with \nusers: {}, \nstates: {}, \ncategories: {}, \nrangeStart: {}, \nrangeEnd: {}, " +
                 "\nfrom: {}, \nsize: {}", users, states, categories, rangeStart, rangeEnd, from, size);
-        return new ResponseEntity<>(eventService.getFullEvents(users, states, categories, rangeStart, rangeEnd, from, size), HttpStatus.OK);
+
+        return new ResponseEntity<>(
+                eventService.getFullEvents(users, states, categories, rangeStart, rangeEnd, from, size), HttpStatus.OK);
     }
 
     @PatchMapping("/{eventId}")

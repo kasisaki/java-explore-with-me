@@ -9,6 +9,8 @@ import ru.practicum.statsServer.repository.StatRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,5 +40,21 @@ public class StatService {
 
     public void hit(StatHitDto hit) {
         repository.save(StatMapper.toStats(hit));
+    }
+
+    public Map<Long, Long> getHitsOfEvent(List<String> uris) {
+        List<StatResponseDto> listOfDto = repository.getMapOfViewsOfEvents(uris);
+        Map<Long, Long> list = listOfDto.stream()
+                .collect(Collectors.toMap(
+                        dto -> Long.parseLong(dto.getUri().split("/")[2]), StatResponseDto::getHits)
+                );
+        System.out.println("the list is " + list);
+        return list;
+    }
+
+    private Long extractNumberFromUri(String uri) {
+        // Assuming the number is always at the end of the uri string
+        String numberString = uri.substring(uri.lastIndexOf('/') + 1);
+        return Long.parseLong(numberString);
     }
 }

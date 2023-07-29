@@ -29,4 +29,5 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                       @Param("toDate") LocalDateTime toDate,
                                       Pageable pageable);
 
+    Page<Event> findAllByInitiatorId(Long userId, Pageable pageable);
 }
