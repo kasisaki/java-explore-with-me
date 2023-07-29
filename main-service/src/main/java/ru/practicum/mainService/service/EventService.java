@@ -10,6 +10,7 @@ import ru.practicum.mainService.mappers.EventMapper;
 import ru.practicum.mainService.repositories.EventRepository;
 import ru.practicum.mainService.repositories.UserRepository;
 import ru.practicum.mainService.utils.enums.StatusEnum;
+import ru.practicum.mainService.utils.exceptions.ElementNotFoundException;
 import ru.practicum.statsClient.StatClient;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,15 +29,31 @@ public class EventService {
     private final StatClient statClient;
 
     public List<EventShortDto> getEvents(Long userId, Integer pagingFrom, Integer pagingSize) {
-//        if (!userRepository.existsById(userId)) {
-//            throw new ElementNotFoundException("User " + userId + " does not exist");
-//        }
-//        return fillViews(eventRepository.findAllByInitiatorId(userId, PageRequest.of(pagingFrom, pagingSize)).stream()
-//                .map(EventMapper::toEventShortDto)
-//                .collect(Collectors.toList()));
-//        return null;
-        return null;
+        if (!userRepository.existsById(userId)) {
+            throw new ElementNotFoundException("User " + userId + " does not exist");
+        }
+        List<EventShortDto> events = eventRepository.findAllByInitiatorId(userId, PageRequest.of(pagingFrom, pagingSize))
+                .stream()
+                .map(EventMapper::toEventShortDto)
+                .collect(Collectors.toList());
+        List<String> listOfUris = events.stream()
+                .map(EventShortDto::getId)
+                .map(Object::toString)
+                .map(s -> "/events/" + s)
+                .collect(Collectors.toList());
+
+        Object bodyWithViews = statClient.getEventViews(listOfUris).getBody();
+
+        return events.stream()
+                .peek(event -> {
+                    if (bodyWithViews instanceof LinkedHashMap) {
+                        event.setViews(Long.parseLong(((LinkedHashMap<?, ?>) bodyWithViews).get(event.getId()
+                                .toString()).toString()));
+                    }
+                })
+                .collect(Collectors.toList());
     }
+
 
     public List<EventShortDto> getShortEventsFilter(String text, List<Integer> categoriesId, Boolean paid, String rangeStart, String rangeEnd, Boolean onlyAvailable, String sort, int from, int size, HttpServletRequest request) {
         return null;
@@ -60,13 +77,27 @@ public class EventService {
                 .map(EventMapper::toEventDto)
                 .collect(Collectors.toList());
 
-        return fillViews(events);
-
-    }
-
-    private List<EventFullDto> fillViews(List<EventFullDto> events) {
         List<String> listOfUris = events.stream()
                 .map(EventFullDto::getId)
+                .map(Object::toString)
+                .map(s -> "/events/" + s)
+                .collect(Collectors.toList());
+
+        Object bodyWithViews = statClient.getEventViews(listOfUris).getBody();
+
+        return events.stream()
+                .peek(event -> {
+                    if (bodyWithViews instanceof LinkedHashMap) {
+                        event.setViews(Long.parseLong(((LinkedHashMap<?, ?>) bodyWithViews).get(event.getId()
+                                .toString()).toString()));
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
+    private <T extends EventShortDto> List<T> fillViews(List<T> events) {
+        List<String> listOfUris = events.stream()
+                .map(T::getId)
                 .map(Object::toString)
                 .map(s -> "/events/" + s)
                 .collect(Collectors.toList());
