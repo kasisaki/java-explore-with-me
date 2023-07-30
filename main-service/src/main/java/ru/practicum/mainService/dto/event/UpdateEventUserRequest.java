@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import ru.practicum.mainService.dto.location.LocationDto;
 import ru.practicum.mainService.models.Category;
-import ru.practicum.mainService.utils.enums.StateActionUserEnum;
+import ru.practicum.mainService.utils.enums.StateActionEnum;
 
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
@@ -36,6 +36,6 @@ public class UpdateEventUserRequest {
     @Size(min = 3, max = 120)
     private String title;
 
-    private StateActionUserEnum stateAction;
+    private StateActionEnum stateAction;
 
 }
