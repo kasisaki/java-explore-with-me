@@ -12,7 +12,6 @@ import ru.practicum.mainService.dto.event.UpdateEventAdminRequest;
 import ru.practicum.mainService.service.EventService;
 import ru.practicum.mainService.utils.enums.StatusEnum;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -52,8 +51,8 @@ public class AdminEventController {
 
     @PatchMapping("/{eventId}")
     public ResponseEntity<EventFullDto> updateEvent(@PathVariable @NotNull Long eventId,
-                                                    @Valid @RequestBody UpdateEventAdminRequest event) {
-        log.info("Update event with \nid: {} and \ndata: {}", eventId, event);
-        return ResponseEntity.status(200).body(null);
+                                                    @RequestBody UpdateEventAdminRequest event) {
+        log.info("Update event with \nid: {} and \ndata:", eventId);
+        return new ResponseEntity<>(eventService.updateEvent(eventId, event), HttpStatus.OK);
     }
 }

@@ -40,7 +40,7 @@ public class Event {
     private Boolean paid;
 
     @ManyToOne
-    @JoinColumn(name = "location_id", nullable = false)
+    @JoinColumn(name = "location_id")
     private Location location;
 
     @Column(name = "participant_limit")

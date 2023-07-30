@@ -11,6 +11,7 @@ import ru.practicum.mainService.utils.enums.StatusEnum;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -30,4 +31,19 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                       Pageable pageable);
 
     Page<Event> findAllByInitiatorId(Long userId, Pageable pageable);
+
+    Optional<Event> findFirstByIdAndInitiatorId(Long eventId, Long userId);
+
+    @Query("SELECT e FROM Event e WHERE " +
+            "(lower(e.title) LIKE lower(concat('%', :text, '%')) OR :text IS NULL) AND " +
+            "(e.category.id IN :categoriesId OR :categoriesId IS NULL) AND " +
+            "(e.paid = :paid OR :paid IS NULL) AND " +
+            "(e.eventDate BETWEEN :rangeStart AND :rangeEnd OR (:rangeStart IS NULL AND :rangeEnd IS NULL)) AND " +
+            "((e.state = 'AVAILABLE' AND :onlyAvailable = TRUE) OR :onlyAvailable = FALSE)")
+    List<Event> getShortEventsFilter(@Param("text") String text,
+                                     @Param("categoriesId") List<Integer> categoriesId,
+                                     @Param("paid") Boolean paid,
+                                     @Param("rangeStart") LocalDateTime rangeStart,
+                                     @Param("rangeEnd") LocalDateTime rangeEnd,
+                                     @Param("onlyAvailable") Boolean onlyAvailable);
 }

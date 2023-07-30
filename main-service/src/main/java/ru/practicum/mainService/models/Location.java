@@ -1,10 +1,16 @@
 package ru.practicum.mainService.models;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity(name = "locations")
 public class Location {
     @Id
@@ -12,8 +18,8 @@ public class Location {
     private Long id;
 
     @Column(name = "lat")
-    private float latitude;
+    private float lat;
 
     @Column(name = "lon")
-    private float longitude;
+    private float lon;
 }
