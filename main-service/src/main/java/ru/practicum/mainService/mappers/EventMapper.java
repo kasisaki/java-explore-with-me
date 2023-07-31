@@ -6,11 +6,13 @@ import ru.practicum.mainService.dto.event.EventFullDto;
 import ru.practicum.mainService.dto.event.EventShortDto;
 import ru.practicum.mainService.dto.event.NewEventDto;
 import ru.practicum.mainService.dto.event.UpdateEventUserRequest;
+import ru.practicum.mainService.dto.user.UserShortDto;
 import ru.practicum.mainService.models.Event;
 import ru.practicum.mainService.models.Location;
 
 import static ru.practicum.mainService.mappers.CategoryMapper.categoryToDto;
 import static ru.practicum.mainService.mappers.CategoryMapper.mapCategoryDtoToCategory;
+import static ru.practicum.mainService.mappers.UserMapper.userShortDtoToUser;
 import static ru.practicum.mainService.mappers.UserMapper.userToShortDto;
 
 
@@ -79,7 +81,7 @@ public class EventMapper {
         return event;
     }
 
-    public static Event createDtoToEvent(NewEventDto newEvent, Location location) {
+    public static Event createDtoToEvent(NewEventDto newEvent, Location location, UserShortDto user) {
         if (newEvent == null) {
             return null;
         }
@@ -91,6 +93,8 @@ public class EventMapper {
         event.setLocation(location);
         event.setRequestModeration(newEvent.getRequestModeration());
         event.setTitle(newEvent.getTitle());
+
+        event.setInitiator(userShortDtoToUser(user));
 
         if (newEvent.getParticipantLimit() == null) {
             event.setParticipantLimit(0);

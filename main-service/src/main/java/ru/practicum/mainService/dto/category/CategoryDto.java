@@ -12,4 +12,9 @@ import lombok.NoArgsConstructor;
 public class CategoryDto {
     long id;
     String name;
+
+    public CategoryDto(int id) {
+        this.id = id;
+    }
+
 }

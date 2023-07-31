@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.dto.StatHitDto;
 import ru.practicum.mainService.dto.event.*;
 import ru.practicum.mainService.dto.location.LocationDto;
+import ru.practicum.mainService.dto.user.UserShortDto;
 import ru.practicum.mainService.mappers.EventMapper;
 import ru.practicum.mainService.models.Event;
 import ru.practicum.mainService.models.Location;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 import static ru.practicum.mainService.mappers.EventMapper.*;
 import static ru.practicum.mainService.mappers.LocationMapper.dtoToLocation;
+import static ru.practicum.mainService.mappers.UserMapper.userToShortDto;
 import static ru.practicum.mainService.utils.enums.SortEventsEnum.VIEWS;
 import static ru.practicum.mainService.utils.enums.StateActionEnum.PUBLISH_EVENT;
 import static ru.practicum.mainService.utils.enums.StateActionEnum.REJECT_EVENT;
@@ -112,13 +114,13 @@ public class EventService {
     }
 
     public EventFullDto createEvent(Long userId, NewEventDto createEventDto) {
-        checkUser(userId);
+        UserShortDto user = userToShortDto(userRepository.findById(userId).orElseThrow());
         if (createEventDto.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {
             throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, " +
                     "чем через два часа от текущего момента ");
         }
         return fillViewsForList(List.of(eventToFullEventDto(eventRepository.save(
-                createDtoToEvent(createEventDto, saveLocation(createEventDto.getLocation())))))).get(0);
+                createDtoToEvent(createEventDto, saveLocation(createEventDto.getLocation()), user))))).get(0);
     }
 
     public EventFullDto updateUserEvent(Long userId, Long eventId, UpdateEventUserRequest updateDto) {
@@ -181,9 +183,11 @@ public class EventService {
 
         return events.stream()
                 .peek(event -> {
-                    if (bodyWithViews instanceof LinkedHashMap) {
-                        event.setViews(Long.parseLong(((LinkedHashMap<?, ?>) bodyWithViews).get(event.getId()
-                                .toString()).toString()));
+                    if (bodyWithViews instanceof LinkedHashMap && event.getId() != null) {
+                        Object views = ((LinkedHashMap<?, ?>) bodyWithViews).get(event.getId().toString());
+                        if (views != null) {
+                            event.setViews(Long.parseLong(views.toString()));
+                        }
                     }
                 })
                 .collect(Collectors.toList());
@@ -191,7 +195,7 @@ public class EventService {
 
     private Location saveLocation(LocationDto locationDto) {
         if (!locationRepository.existsByLatAndLon(locationDto.getLat(), locationDto.getLon())) {
-            return locationRepository.save(dtoToLocation(locationDto));
+            return locationRepository.saveAndFlush(dtoToLocation(locationDto));
         }
         return locationRepository.findByLatAndLon(locationDto.getLat(), locationDto.getLon());
     }
