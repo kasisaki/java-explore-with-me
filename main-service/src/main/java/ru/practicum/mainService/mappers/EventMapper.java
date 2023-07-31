@@ -1,6 +1,7 @@
 package ru.practicum.mainService.mappers;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import ru.practicum.mainService.dto.event.EventFullDto;
 import ru.practicum.mainService.dto.event.EventShortDto;
 import ru.practicum.mainService.dto.event.NewEventDto;
@@ -8,11 +9,13 @@ import ru.practicum.mainService.dto.event.UpdateEventUserRequest;
 import ru.practicum.mainService.models.Event;
 import ru.practicum.mainService.models.Location;
 
-import static ru.practicum.mainService.mappers.CategoryMapper.mapCategoryToCategoryResponseDto;
+import static ru.practicum.mainService.mappers.CategoryMapper.categoryToDto;
+import static ru.practicum.mainService.mappers.CategoryMapper.mapCategoryDtoToCategory;
 import static ru.practicum.mainService.mappers.UserMapper.userToShortDto;
 
 
 @Data
+@Slf4j
 public class EventMapper {
 
     public static EventFullDto eventToFullEventDto(Event event) {
@@ -23,7 +26,7 @@ public class EventMapper {
         eventDto.setId(event.getId());
         eventDto.setTitle(event.getTitle());
         eventDto.setAnnotation(event.getAnnotation());
-        eventDto.setCategory(mapCategoryToCategoryResponseDto(event.getCategory()));
+        eventDto.setCategory(categoryToDto(event.getCategory()));
         eventDto.setPaid(event.getPaid());
         eventDto.setEventDate(event.getEventDate());
         eventDto.setInitiator(userToShortDto(event.getInitiator()));
@@ -41,7 +44,7 @@ public class EventMapper {
         shortEventResponseDto.setId(event.getId());
         shortEventResponseDto.setTitle(event.getTitle());
         shortEventResponseDto.setAnnotation(event.getAnnotation());
-        shortEventResponseDto.setCategory(mapCategoryToCategoryResponseDto(event.getCategory()));
+        shortEventResponseDto.setCategory(categoryToDto(event.getCategory()));
         shortEventResponseDto.setPaid(event.getPaid());
         shortEventResponseDto.setEventDate(event.getEventDate());
         shortEventResponseDto.setInitiator(userToShortDto(event.getInitiator()));
@@ -50,14 +53,29 @@ public class EventMapper {
 
     // TODO:         event.setCategory(updateDto.getCategory());
     public static <T extends UpdateEventUserRequest> Event updateAdminDtoToEvent(T updateDto, Event event, Location location) {
-        event.setAnnotation(updateDto.getAnnotation());
-        event.setDescription(updateDto.getDescription());
-        event.setEventDate(updateDto.getEventDate());
-        event.setPaid(updateDto.getPaid());
+        if (updateDto.getAnnotation() != null) {
+            event.setAnnotation(updateDto.getAnnotation());
+        }
+        if (updateDto.getDescription() != null) {
+            event.setDescription(updateDto.getDescription());
+        }
+        if (updateDto.getEventDate() != null) {
+            event.setEventDate(updateDto.getEventDate());
+        }
+        if (updateDto.getPaid() != null) {
+            event.setPaid(updateDto.getPaid());
+        }
+        if (updateDto.getParticipantLimit() != null) {
+            event.setParticipantLimit(updateDto.getParticipantLimit());
+        }
+        if (updateDto.getTitle() != null) {
+            event.setTitle(updateDto.getTitle());
+        }
+        if (updateDto.getAnnotation() != null) {
+            event.setRequestModeration(updateDto.getRequestModeration());
+        }
+
         event.setLocation(location);
-        event.setParticipantLimit(updateDto.getParticipantLimit());
-        event.setTitle(updateDto.getTitle());
-        event.setRequestModeration(updateDto.getRequestModeration());
         return event;
     }
 
@@ -67,7 +85,7 @@ public class EventMapper {
         }
         Event event = new Event();
         event.setAnnotation(newEvent.getAnnotation());
-        event.setCategory(newEvent.getCategory());
+        event.setCategory(mapCategoryDtoToCategory(newEvent.getCategory()));
         event.setDescription(newEvent.getDescription());
         event.setEventDate(newEvent.getEventDate());
         event.setLocation(location);

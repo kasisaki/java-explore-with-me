@@ -15,12 +15,12 @@ public class Event {
     @Column(name = "id")
     private Long id;
 
-    @Column(length = 2000, nullable = false)
+    @Column(length = 2000)
     private String annotation;
 
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @Column(length = 10000)

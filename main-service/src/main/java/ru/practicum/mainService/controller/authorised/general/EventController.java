@@ -34,7 +34,7 @@ public class EventController {
     }
 
     @PostMapping
-    public ResponseEntity<EventFullDto> createEvent(@Valid @RequestBody NewEventDto createEventDto,
+    public ResponseEntity<EventFullDto> createEvent(@RequestBody @Valid NewEventDto createEventDto,
                                                     @PathVariable Long userId) {
         log.info("Add event for user with body: {}, id: {}", createEventDto, userId);
         return new ResponseEntity<>(eventService.createEvent(userId, createEventDto), HttpStatus.CREATED);

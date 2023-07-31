@@ -150,7 +150,8 @@ public class EventService {
             throw new ConflictException("Событие можно отклонить, только если оно еще не опубликовано");
         }
         return eventToFullEventDto(eventRepository.save(
-                updateAdminDtoToEvent(updateDto, event, saveLocation(updateDto.getLocation()))));
+                updateAdminDtoToEvent(updateDto, event,
+                        updateDto.getLocation() == null ? event.getLocation() : saveLocation(updateDto.getLocation()))));
     }
 
     // TODO: ADD CONFIRMED REQUESTS COUNT

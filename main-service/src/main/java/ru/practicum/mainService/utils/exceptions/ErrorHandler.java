@@ -50,5 +50,12 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(errorResponse, BAD_REQUEST);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> catchException(final Exception e) {
+        log.info(e.getMessage(), e);
+        HttpStatus httpStatus = CONFLICT;
+        return new ResponseEntity<>(new ErrorResponse(httpStatus.value(), e.getMessage()), httpStatus);
+    }
+
 
 }

@@ -1,8 +1,8 @@
 package ru.practicum.mainService.dto.event;
 
 import lombok.Data;
+import ru.practicum.mainService.dto.category.CategoryDto;
 import ru.practicum.mainService.dto.location.LocationDto;
-import ru.practicum.mainService.models.Category;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotEmpty;
@@ -18,7 +18,7 @@ public class NewEventDto {
     private String annotation;
 
     @NotNull
-    private Category category;
+    private CategoryDto category;
 
     @NotEmpty
     @Size(min = 20, max = 7000)
@@ -34,7 +34,7 @@ public class NewEventDto {
 
     private Integer participantLimit;
 
-    private Boolean requestModeration = true; //default value
+    private Boolean requestModeration; //default value
 
     @NotEmpty
     @Size(min = 3, max = 120)

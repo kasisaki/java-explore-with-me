@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.mainService.dto.compilation.CompilationDto;
 import ru.practicum.mainService.dto.user.NewUserRequest;
 import ru.practicum.mainService.dto.user.UserDto;
 import ru.practicum.mainService.service.UserService;
@@ -21,7 +20,7 @@ public class AdminUserController {
     private final UserService service;
 
     @PostMapping
-    public ResponseEntity<UserDto> createCompilations(@RequestBody @Valid NewUserRequest newUserRequest) {
+    public ResponseEntity<UserDto> createUser(@RequestBody @Valid NewUserRequest newUserRequest) {
         return new ResponseEntity<>(service.create(newUserRequest), HttpStatus.CREATED);
     }
 
@@ -33,7 +32,7 @@ public class AdminUserController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<CompilationDto> deleteCompilation(@PathVariable Long userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
         service.delete(userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
