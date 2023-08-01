@@ -14,8 +14,10 @@ import ru.practicum.mainService.models.Event;
 import ru.practicum.mainService.models.Location;
 import ru.practicum.mainService.repositories.EventRepository;
 import ru.practicum.mainService.repositories.LocationRepository;
+import ru.practicum.mainService.repositories.RequestRepository;
 import ru.practicum.mainService.repositories.UserRepository;
 import ru.practicum.mainService.utils.enums.EventStatusEnum;
+import ru.practicum.mainService.utils.enums.RequestStatusEnum;
 import ru.practicum.mainService.utils.enums.SortEventsEnum;
 import ru.practicum.mainService.utils.exceptions.ConflictException;
 import ru.practicum.mainService.utils.exceptions.ElementNotFoundException;
@@ -34,6 +36,7 @@ import static ru.practicum.mainService.mappers.EventMapper.*;
 import static ru.practicum.mainService.mappers.LocationMapper.dtoToLocation;
 import static ru.practicum.mainService.mappers.UserMapper.userToShortDto;
 import static ru.practicum.mainService.utils.enums.EventStatusEnum.CANCELED;
+import static ru.practicum.mainService.utils.enums.RequestStatusEnum.ACCEPTED;
 import static ru.practicum.mainService.utils.enums.SortEventsEnum.VIEWS;
 import static ru.practicum.utils.Constants.DATE_PATTERN;
 
@@ -41,9 +44,10 @@ import static ru.practicum.utils.Constants.DATE_PATTERN;
 @Service
 @RequiredArgsConstructor
 public class EventService {
+    private final LocationRepository locationRepository;
+    private final RequestRepository requestRepository;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
-    private final LocationRepository locationRepository;
     private final StatClient statClient;
 
 
@@ -62,9 +66,12 @@ public class EventService {
                 "ewm-events-service",
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN))));
 
-        List<EventShortDto> events = fillViewsForList(eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd, onlyAvailable)
+        List<EventShortDto> events = fillViewsForList(
+                eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd, onlyAvailable)
                 .stream()
-                .map(EventMapper::eventToShortDto).collect(Collectors.toList()));
+                .map(EventMapper::eventToShortDto)
+                        .map(this::setNumberOfConfirmedRequest)
+                        .collect(Collectors.toList()));
 
         if (sort == null) {
             return events.stream()
@@ -91,7 +98,15 @@ public class EventService {
                 "ewm-events-service",
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN))));
 
-        return fillViewsForList(List.of(eventToFullEventDto(eventRepository.findById(eventId).orElseThrow()))).get(0);
+        return fillViewsForList(
+                List.of(
+                        setNumberOfConfirmedRequest(
+                                eventToFullEventDto(
+                                        eventRepository.findById(eventId).orElseThrow()
+                                )
+                        )
+                )
+        ).get(0);
     }
 
 
@@ -102,14 +117,22 @@ public class EventService {
         List<EventShortDto> events = eventRepository.findAllByInitiatorId(userId, PageRequest.of(pagingFrom, pagingSize))
                 .stream()
                 .map(EventMapper::eventToShortDto)
+                .map(this::setNumberOfConfirmedRequest)
                 .collect(Collectors.toList());
         return fillViewsForList(events);
     }
 
     public EventFullDto getFullEventOfUser(Long userId, Long eventId) {
         checkUser(userId);
-        return fillViewsForList(List.of(eventToFullEventDto(
-                eventRepository.findFirstByIdAndInitiatorId(eventId, userId).orElseThrow()))).get(0);
+        return fillViewsForList(
+                List.of(
+                        setNumberOfConfirmedRequest(
+                                eventToFullEventDto(
+                                        eventRepository.findFirstByIdAndInitiatorId(eventId, userId).orElseThrow()
+                                )
+                        )
+                )
+        ).get(0);
     }
 
     public EventFullDto createEvent(Long userId, NewEventDto createEventDto) {
@@ -118,8 +141,18 @@ public class EventService {
             throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, " +
                     "чем через два часа от текущего момента ");
         }
-        return fillViewsForList(List.of(eventToFullEventDto(eventRepository.save(
-                createDtoToEvent(createEventDto, saveLocation(createEventDto.getLocation()), user))))).get(0);
+        return fillViewsForList(
+                List.of(
+                        setNumberOfConfirmedRequest(
+                                eventToFullEventDto(
+                                        eventRepository.save(
+                                                createDtoToEvent(
+                                                       createEventDto, saveLocation(createEventDto.getLocation()), user)
+                                        )
+                                )
+                        )
+                )
+        ).get(0);
     }
 
     public EventFullDto updateUserEvent(Long userId, Long eventId, UpdateEventUserRequest updateDto) {
@@ -133,8 +166,19 @@ public class EventService {
             throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, " +
                     "чем через два часа от текущего момента ");
         }
-        return fillViewsForList(List.of(eventToFullEventDto(eventRepository.save(
-                updateAdminDtoToEvent(updateDto, event, saveLocation(updateDto.getLocation())))))).get(0);
+        return fillViewsForList(
+                List.of(
+                        setNumberOfConfirmedRequest(
+                                eventToFullEventDto(
+                                        eventRepository.save(
+                                                updateAdminDtoToEvent(
+                                                        updateDto, event, saveLocation(updateDto.getLocation())
+                                                )
+                                        )
+                                )
+                        )
+                )
+        ).get(0);
     }
 
     // Admin services
@@ -147,10 +191,16 @@ public class EventService {
                 updateAdminDtoToEvent(updateDto, event,
                         updateDto.getLocation() == null ? event.getLocation() : saveLocation(updateDto.getLocation())));
 
-        return fillViewsForList(List.of(eventToFullEventDto(updatedEvent))).get(0);
+        return fillViewsForList(
+                List.of(
+                        setNumberOfConfirmedRequest(
+                                eventToFullEventDto(updatedEvent
+                                )
+                        )
+                )
+        ).get(0);
     }
 
-    // TODO: ADD CONFIRMED REQUESTS COUNT
     public List<EventFullDto> getFullEvents(Set<Long> userIds, List<EventStatusEnum> states, List<Long> categories,
                                             LocalDateTime fromDate, LocalDateTime toDate, Integer pagingFrom,
                                             Integer pagingSize) {
@@ -158,6 +208,7 @@ public class EventService {
                         userIds, states, categories, fromDate, toDate, PageRequest.of(pagingFrom, pagingSize))
                 .stream()
                 .map(EventMapper::eventToFullEventDto)
+                .map(this::setNumberOfConfirmedRequest)
                 .collect(Collectors.toList());
 
         return fillViewsForList(events);
@@ -187,6 +238,11 @@ public class EventService {
                     }
                 })
                 .collect(Collectors.toList());
+    }
+
+    private <T extends EventShortDto> T setNumberOfConfirmedRequest(T event) {
+        requestRepository.countByEventIdAndStatus(event.getId(), ACCEPTED);
+        return event;
     }
 
     private Location saveLocation(LocationDto locationDto) {
