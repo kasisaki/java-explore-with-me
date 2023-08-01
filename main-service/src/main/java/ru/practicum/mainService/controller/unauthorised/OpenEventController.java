@@ -32,9 +32,9 @@ public class OpenEventController {
                                                          @RequestParam(name = "categories", required = false) List<Integer> categoriesId,
                                                          @RequestParam(required = false) Boolean paid,
                                                          @RequestParam(required = false)
-                                                             @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeStart,
+                                                         @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeStart,
                                                          @RequestParam(required = false)
-                                                             @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeEnd,
+                                                         @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeEnd,
                                                          @RequestParam(defaultValue = "false") Boolean onlyAvailable,
                                                          @RequestParam(required = false) SortEventsEnum sort,
                                                          @PositiveOrZero @RequestParam(defaultValue = "0") int from,

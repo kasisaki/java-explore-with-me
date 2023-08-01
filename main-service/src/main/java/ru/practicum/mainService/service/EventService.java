@@ -17,7 +17,6 @@ import ru.practicum.mainService.repositories.LocationRepository;
 import ru.practicum.mainService.repositories.RequestRepository;
 import ru.practicum.mainService.repositories.UserRepository;
 import ru.practicum.mainService.utils.enums.EventStatusEnum;
-import ru.practicum.mainService.utils.enums.RequestStatusEnum;
 import ru.practicum.mainService.utils.enums.SortEventsEnum;
 import ru.practicum.mainService.utils.exceptions.ConflictException;
 import ru.practicum.mainService.utils.exceptions.ElementNotFoundException;
@@ -68,8 +67,8 @@ public class EventService {
 
         List<EventShortDto> events = fillViewsForList(
                 eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd, onlyAvailable)
-                .stream()
-                .map(EventMapper::eventToShortDto)
+                        .stream()
+                        .map(EventMapper::eventToShortDto)
                         .map(this::setNumberOfConfirmedRequest)
                         .collect(Collectors.toList()));
 
@@ -147,7 +146,7 @@ public class EventService {
                                 eventToFullEventDto(
                                         eventRepository.save(
                                                 createDtoToEvent(
-                                                       createEventDto, saveLocation(createEventDto.getLocation()), user)
+                                                        createEventDto, saveLocation(createEventDto.getLocation()), user)
                                         )
                                 )
                         )
