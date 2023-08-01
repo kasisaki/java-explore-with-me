@@ -5,6 +5,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.mainService.dto.user.NewUserRequest;
 import ru.practicum.mainService.dto.user.UserDto;
+import ru.practicum.mainService.mappers.UserMapper;
 import ru.practicum.mainService.repositories.UserRepository;
 import ru.practicum.mainService.utils.exceptions.ElementNotFoundException;
 
@@ -24,7 +25,10 @@ public class UserService {
         if (ids == null || ids.size() == 0) {
             return new ArrayList<>();
         }
-        return userRepository.getAllByIdIn(ids, PageRequest.of(from, size)).stream().collect(Collectors.toList());
+        return userRepository.getAllByIdIn(ids, PageRequest.of(from, size))
+                .stream()
+                .map(UserMapper::userToDto)
+                .collect(Collectors.toList());
     }
 
     public void delete(Long userId) {

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.practicum.mainService.models.Event;
-import ru.practicum.mainService.utils.enums.StatusEnum;
+import ru.practicum.mainService.utils.enums.EventStatusEnum;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +24,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "(e.category.id IN :categories OR :categories IS NULL) AND " +
             "(e.eventDate BETWEEN :fromDate AND :toDate)")
     Page<Event> getFullEventsFiltered(@Param("userIds") Set<Long> userIds,
-                                      @Param("states") List<StatusEnum> states,
+                                      @Param("states") List<EventStatusEnum> states,
                                       @Param("categories") List<Long> categories,
                                       @Param("fromDate") LocalDateTime fromDate,
                                       @Param("toDate") LocalDateTime toDate,

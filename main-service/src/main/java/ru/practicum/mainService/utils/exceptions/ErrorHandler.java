@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import ru.practicum.mainService.utils.exceptions.errorResponse.ErrorResponse;
 
+import java.util.NoSuchElementException;
+
 import static org.springframework.http.HttpStatus.*;
 
 @Slf4j
@@ -51,9 +53,9 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<ErrorResponse> catchException(final Exception e) {
+    public ResponseEntity<ErrorResponse> catchException(final NoSuchElementException e) {
         log.info(e.getMessage(), e);
-        HttpStatus httpStatus = CONFLICT;
+        HttpStatus httpStatus = NOT_FOUND;
         return new ResponseEntity<>(new ErrorResponse(httpStatus.value(), e.getMessage()), httpStatus);
     }
 

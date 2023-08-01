@@ -1,6 +1,7 @@
-package ru.practicum.mainService.dto.request;
+package ru.practicum.mainService.dto.event;
 
 import lombok.Data;
+import ru.practicum.mainService.dto.request.ParticipationRequestDto;
 
 import java.util.List;
 

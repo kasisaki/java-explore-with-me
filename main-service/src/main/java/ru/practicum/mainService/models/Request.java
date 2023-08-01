@@ -1,12 +1,14 @@
 package ru.practicum.mainService.models;
 
+import lombok.Builder;
 import lombok.Data;
-import ru.practicum.mainService.utils.enums.StatusEnum;
+import ru.practicum.mainService.utils.enums.RequestStatusEnum;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Data
+@Builder
 @Entity(name = "requests")
 public class Request {
     @Id
@@ -16,15 +18,15 @@ public class Request {
     @Column
     private LocalDateTime created;
 
-    @ManyToOne
+    @ManyToOne(targetEntity = Event.class)
     @JoinColumn(name = "event_id")
-    private Event event;
+    private Long eventId;
 
-    @ManyToOne
-    @JoinColumn(name = "request_id")
-    private User requester;
+    @ManyToOne(targetEntity = User.class)
+    @JoinColumn(name = "requester_id")
+    private Long userId;
 
     @Column
     @Enumerated(EnumType.STRING)
-    private StatusEnum status;
+    private RequestStatusEnum status;
 }

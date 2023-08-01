@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import ru.practicum.mainService.models.Location;
-import ru.practicum.mainService.utils.enums.StatusEnum;
+import ru.practicum.mainService.utils.enums.EventStatusEnum;
 
 import java.time.LocalDateTime;
 
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class EventFullDto extends EventShortDto {
     private LocalDateTime publishedOn;
     private Boolean requestModeration;
-    private StatusEnum state;
+    private EventStatusEnum state;
     private LocalDateTime createdOn;
     private String description;
     private Integer participantLimit = 0;

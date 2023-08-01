@@ -1,10 +1,13 @@
 package ru.practicum.mainService.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import ru.practicum.mainService.utils.enums.StatusEnum;
+import ru.practicum.mainService.utils.enums.EventStatusEnum;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+
+import static ru.practicum.utils.Constants.DATE_PATTERN;
 
 @Data
 @Entity
@@ -27,9 +30,11 @@ public class Event {
     private String description;
 
     @Column
+    @JsonFormat(pattern = DATE_PATTERN)
     private LocalDateTime createdOn;
 
     @Column(name = "event_date")
+    @JsonFormat(pattern = DATE_PATTERN)
     private LocalDateTime eventDate;
 
     @ManyToOne
@@ -54,8 +59,9 @@ public class Event {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private StatusEnum state;
+    private EventStatusEnum state;
 
     @Column
+    @JsonFormat(pattern = DATE_PATTERN)
     private LocalDateTime publishedOn;
 }

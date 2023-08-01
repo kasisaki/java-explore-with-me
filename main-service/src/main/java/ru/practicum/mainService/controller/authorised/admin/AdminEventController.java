@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.mainService.dto.event.EventFullDto;
 import ru.practicum.mainService.dto.event.UpdateEventAdminRequest;
 import ru.practicum.mainService.service.EventService;
-import ru.practicum.mainService.utils.enums.StatusEnum;
+import ru.practicum.mainService.utils.enums.EventStatusEnum;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -33,7 +33,7 @@ public class AdminEventController {
     @GetMapping
     public ResponseEntity<List<EventFullDto>> getEvents(
             @RequestParam(name = "users", required = false) Set<Long> users,
-            @RequestParam(name = "states", required = false) List<StatusEnum> states,
+            @RequestParam(name = "states", required = false) List<EventStatusEnum> states,
             @RequestParam(name = "categories", required = false) List<Long> categories,
             @RequestParam(name = "rangeStart", required = false, defaultValue = START_DATE)
             @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeStart,

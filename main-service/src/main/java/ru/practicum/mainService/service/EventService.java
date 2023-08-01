@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.StatHitDto;
 import ru.practicum.mainService.dto.event.*;
 import ru.practicum.mainService.dto.location.LocationDto;
@@ -14,8 +15,8 @@ import ru.practicum.mainService.models.Location;
 import ru.practicum.mainService.repositories.EventRepository;
 import ru.practicum.mainService.repositories.LocationRepository;
 import ru.practicum.mainService.repositories.UserRepository;
+import ru.practicum.mainService.utils.enums.EventStatusEnum;
 import ru.practicum.mainService.utils.enums.SortEventsEnum;
-import ru.practicum.mainService.utils.enums.StatusEnum;
 import ru.practicum.mainService.utils.exceptions.ConflictException;
 import ru.practicum.mainService.utils.exceptions.ElementNotFoundException;
 import ru.practicum.statsClient.StatClient;
@@ -32,10 +33,8 @@ import java.util.stream.Collectors;
 import static ru.practicum.mainService.mappers.EventMapper.*;
 import static ru.practicum.mainService.mappers.LocationMapper.dtoToLocation;
 import static ru.practicum.mainService.mappers.UserMapper.userToShortDto;
+import static ru.practicum.mainService.utils.enums.EventStatusEnum.CANCELED;
 import static ru.practicum.mainService.utils.enums.SortEventsEnum.VIEWS;
-import static ru.practicum.mainService.utils.enums.StateActionEnum.PUBLISH_EVENT;
-import static ru.practicum.mainService.utils.enums.StateActionEnum.REJECT_EVENT;
-import static ru.practicum.mainService.utils.enums.StatusEnum.*;
 import static ru.practicum.utils.Constants.DATE_PATTERN;
 
 @Slf4j
@@ -139,25 +138,20 @@ public class EventService {
     }
 
     // Admin services
+    @Transactional
     public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateDto) {
         Event event = eventRepository.findById(eventId).orElseThrow();
-        if (!event.getPublishedOn().isBefore(updateDto.getEventDate().minusHours(1))) {
-            throw new ConflictException("Дата начала изменяемого события должна быть " +
-                    "не ранее чем за час от даты публикации.");
-        }
-        if (updateDto.getStateAction().equals(PUBLISH_EVENT) && !event.getState().equals(PENDING)) {
-            throw new ConflictException("Событие можно публиковать, только если оно в состоянии ожидания публикации");
-        }
-        if (updateDto.getStateAction().equals(REJECT_EVENT) && event.getState().equals(PUBLISHED)) {
-            throw new ConflictException("Событие можно отклонить, только если оно еще не опубликовано");
-        }
-        return eventToFullEventDto(eventRepository.save(
+
+
+        Event updatedEvent = eventRepository.save(
                 updateAdminDtoToEvent(updateDto, event,
-                        updateDto.getLocation() == null ? event.getLocation() : saveLocation(updateDto.getLocation()))));
+                        updateDto.getLocation() == null ? event.getLocation() : saveLocation(updateDto.getLocation())));
+
+        return fillViewsForList(List.of(eventToFullEventDto(updatedEvent))).get(0);
     }
 
     // TODO: ADD CONFIRMED REQUESTS COUNT
-    public List<EventFullDto> getFullEvents(Set<Long> userIds, List<StatusEnum> states, List<Long> categories,
+    public List<EventFullDto> getFullEvents(Set<Long> userIds, List<EventStatusEnum> states, List<Long> categories,
                                             LocalDateTime fromDate, LocalDateTime toDate, Integer pagingFrom,
                                             Integer pagingSize) {
         List<EventFullDto> events = eventRepository.getFullEventsFiltered(
@@ -187,6 +181,8 @@ public class EventService {
                         Object views = ((LinkedHashMap<?, ?>) bodyWithViews).get(event.getId().toString());
                         if (views != null) {
                             event.setViews(Long.parseLong(views.toString()));
+                        } else {
+                            event.setViews(0L);
                         }
                     }
                 })
