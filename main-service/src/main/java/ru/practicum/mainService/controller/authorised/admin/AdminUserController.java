@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.mainService.dto.user.NewUserRequest;
 import ru.practicum.mainService.dto.user.UserDto;
@@ -13,9 +14,10 @@ import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
+@Validated
 @RestController
-@RequestMapping("/admin/users")
 @RequiredArgsConstructor
+@RequestMapping("/admin/users")
 public class AdminUserController {
     private final UserService service;
 

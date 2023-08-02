@@ -2,6 +2,7 @@ package ru.practicum.mainService.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.mainService.dto.request.ParticipationRequestDto;
 import ru.practicum.mainService.mappers.RequestMapper;
 import ru.practicum.mainService.models.Event;
@@ -36,6 +37,7 @@ public class RequestService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public ParticipationRequestDto createRequest(Long userId, Long eventId) {
         checkUserExistsOrThrow(userId);
         User user = userRepository.findById(userId).orElseThrow();
@@ -54,7 +56,7 @@ public class RequestService {
 
         if (event.getParticipantLimit() != null &&
                 event.getParticipantLimit() != 0 &&
-                requestRepository.countByEventIdAndStatus(eventId, ACCEPTED) >= event.getParticipantLimit()) {
+                requestRepository.countByEventIdAndStatus(eventId, CONFIRMED) >= event.getParticipantLimit()) {
             throw new ConflictException("У события достигнут лимит запросов на участие");
         }
 
@@ -65,12 +67,13 @@ public class RequestService {
                 .status(PENDING)
                 .build();
         if (!event.getRequestModeration()) {
-            request.setStatus(ACCEPTED);
+            request.setStatus(CONFIRMED);
         }
 
         return requestToRequestDto(requestRepository.save(request));
     }
 
+    @Transactional
     public ParticipationRequestDto updateRequest(Long userId, Long requestId) {
         checkUserExistsOrThrow(userId);
         Request request = requestRepository.findById(requestId).orElseThrow();

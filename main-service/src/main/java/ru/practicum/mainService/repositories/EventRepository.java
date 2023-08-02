@@ -35,15 +35,16 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Optional<Event> findFirstByIdAndInitiatorId(Long eventId, Long userId);
 
     @Query("SELECT e FROM Event e WHERE " +
-            "(lower(e.title) LIKE lower(concat('%', :text, '%')) OR :text IS NULL) AND " +
+            "((lower(e.annotation) LIKE lower(concat('%', :text, '%')) OR " +
+            "(lower(e.description) LIKE lower(concat('%', :text, '%')))) OR :text IS NULL) AND " +
             "(e.category.id IN :categoriesId OR :categoriesId IS NULL) AND " +
             "(e.paid = :paid OR :paid IS NULL) AND " +
             "(e.eventDate BETWEEN :rangeStart AND :rangeEnd OR (:rangeStart IS NULL AND :rangeEnd IS NULL)) AND " +
-            "((e.state = 'AVAILABLE' AND :onlyAvailable = TRUE) OR :onlyAvailable = FALSE)")
+            "e.participantLimit > (SELECT COUNT(r) FROM requests r WHERE r.status = 'CONFIRMED' and r.event.id = e.id)" +
+            "ORDER BY e.eventDate")
     List<Event> getShortEventsFilter(@Param("text") String text,
-                                     @Param("categoriesId") List<Integer> categoriesId,
+                                     @Param("categoriesId") List<Long> categoriesId,
                                      @Param("paid") Boolean paid,
                                      @Param("rangeStart") LocalDateTime rangeStart,
-                                     @Param("rangeEnd") LocalDateTime rangeEnd,
-                                     @Param("onlyAvailable") Boolean onlyAvailable);
+                                     @Param("rangeEnd") LocalDateTime rangeEnd);
 }

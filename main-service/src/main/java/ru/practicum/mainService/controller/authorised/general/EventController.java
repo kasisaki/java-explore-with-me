@@ -32,7 +32,7 @@ public class EventController {
     public ResponseEntity<EventFullDto> createEvent(@RequestBody @Valid NewEventDto createEventDto,
                                                     @PathVariable Long userId) {
         log.info("Add event for user with body: {}, id: {}", createEventDto, userId);
-        return new ResponseEntity<>(eventService.createEvent(userId, createEventDto), HttpStatus.CREATED);
+        return new ResponseEntity<>(eventService.createEventByUser(userId, createEventDto), HttpStatus.CREATED);
     }
 
     @GetMapping("/{eventId}")
@@ -47,23 +47,25 @@ public class EventController {
                                                         @PathVariable("userId") Long userId,
                                                         @PathVariable("eventId") Long eventId) {
         log.info("Update event with id: {} for user with id: {} with body: {}", eventId, userId, updateDto);
-        return new ResponseEntity<>(eventService.updateUserEvent(userId, eventId, updateDto), HttpStatus.OK);
+        return new ResponseEntity<>(eventService.updateEventByUser(userId, eventId, updateDto), HttpStatus.OK);
     }
 
     // TODO getEventRequest
     @GetMapping("{eventId}/requests")
-    public ResponseEntity<ParticipationRequestDto> getEventRequest(@PathVariable("userId") Long userId,
-                                                                   @PathVariable("eventId") Long eventId) {
+    public ResponseEntity<List<ParticipationRequestDto>> getUserEventRequests(@PathVariable("userId") Long userId,
+                                                                              @PathVariable("eventId") Long eventId) {
         log.info("Get event request with id: {} for user with id: {}", eventId, userId);
-        return ResponseEntity.status(200).body(null);
+        return new ResponseEntity<>(eventService.getEventRequestByUser(userId, eventId), HttpStatus.OK);
     }
 
     // TODO updateEventRequest
     @PatchMapping("{eventId}/requests")
-    public ResponseEntity<EventRequestStatusUpdateResult> updateEventRequest(@Valid @RequestBody EventRequestStatusUpdateRequest dto,
-                                                                             @PathVariable("userId") Long userId,
-                                                                             @PathVariable("eventId") Long eventId) {
-        log.info("Update event request with id: {} for user with id: {} with body: {}", eventId, userId, dto);
-        return ResponseEntity.status(200).body(null);
+    public ResponseEntity<EventRequestStatusUpdateResult> updateUserEventParticipationRequest(
+            @Valid @RequestBody EventRequestStatusUpdateRequest updateRequestDto,
+            @PathVariable("userId") Long userId,
+            @PathVariable("eventId") Long eventId) {
+        log.info("Update event request with id: {} for user with id: {} with body: {}",
+                eventId, userId, updateRequestDto);
+        return new ResponseEntity<>(eventService.updateEventRequestByUser(userId, eventId, updateRequestDto), HttpStatus.OK);
     }
 }

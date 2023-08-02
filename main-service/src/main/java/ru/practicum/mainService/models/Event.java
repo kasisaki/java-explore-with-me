@@ -22,7 +22,7 @@ public class Event {
     private String annotation;
 
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 

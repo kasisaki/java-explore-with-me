@@ -51,8 +51,8 @@ public class AdminEventController {
 
     @PatchMapping("/{eventId}")
     public ResponseEntity<EventFullDto> updateEvent(@PathVariable @NotNull Long eventId,
-                                                    @RequestBody UpdateEventAdminRequest event) {
+                                                    @RequestBody UpdateEventAdminRequest eventDto) {
         log.info("Update event with \nid: {} and \ndata:", eventId);
-        return new ResponseEntity<>(eventService.updateEvent(eventId, event), HttpStatus.OK);
+        return new ResponseEntity<>(eventService.updateEventByAdmin(eventId, eventDto), HttpStatus.OK);
     }
 }

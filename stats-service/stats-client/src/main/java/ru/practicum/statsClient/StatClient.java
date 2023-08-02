@@ -37,10 +37,19 @@ public class StatClient extends BaseClient {
         return get("/stats?start=" + start + "&end=" + end + "&unique=" + unique + urisString);
     }
 
-    public ResponseEntity<Object> getEventViews(List<String> uris) {
+    public ResponseEntity<Object> getHitsOfUris(List<String> uris) {
         String urisString = "";
         if (!(uris == null) && !uris.isEmpty()) {
             urisString = "&uris=" + String.join("&uris=", uris);
+        }
+
+        return get("/stats/hits?" + urisString);
+    }
+
+    public ResponseEntity<Object> getHitsOfUri(String uri) {
+        String urisString = "";
+        if (!(uri == null) && !uri.isEmpty()) {
+            urisString = "&uris=" + uri;
         }
 
         return get("/stats/hits?" + urisString);

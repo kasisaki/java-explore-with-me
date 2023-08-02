@@ -28,21 +28,24 @@ public class OpenEventController {
     private final EventService eventService;
 
     @GetMapping
-    public ResponseEntity<List<EventShortDto>> getEvents(@RequestParam(required = false) String text,
-                                                         @RequestParam(name = "categories", required = false) List<Integer> categoriesId,
-                                                         @RequestParam(required = false) Boolean paid,
-                                                         @RequestParam(required = false)
-                                                         @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeStart,
-                                                         @RequestParam(required = false)
-                                                         @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeEnd,
-                                                         @RequestParam(defaultValue = "false") Boolean onlyAvailable,
-                                                         @RequestParam(required = false) SortEventsEnum sort,
-                                                         @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                                         @Positive @RequestParam(defaultValue = "10") int size,
-                                                         HttpServletRequest request) {
+    public ResponseEntity<List<EventShortDto>> getEvents(
+            @RequestParam(required = false) String text,
+            @RequestParam(name = "categories", required = false) List<Long> categoriesId,
+            @RequestParam(required = false) Boolean paid,
+            @RequestParam(required = false)
+            @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeStart,
+            @RequestParam(required = false)
+            @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeEnd,
+            @RequestParam(defaultValue = "false") Boolean onlyAvailable,
+            @RequestParam(required = false) SortEventsEnum sort,
+            @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+            @Positive @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request) {
+
         log.info("Get events with \ntext: {}, \ncategories: {}, \npaid: {}, \nrangeStart: {}, \nrangeEnd: {}, " +
                         "\nonlyAvailable: {}, \nsort: {}, \nfrom: {}, \nsize: {}", text, categoriesId, paid, rangeStart, rangeEnd,
                 onlyAvailable, sort, from, size);
+
         return ResponseEntity.status(200).body(eventService.getShortEventsFilter(text, categoriesId, paid, rangeStart,
                 rangeEnd, onlyAvailable, sort, from, size, request));
     }

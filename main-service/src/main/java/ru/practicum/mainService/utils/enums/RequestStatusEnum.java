@@ -4,7 +4,7 @@ import ru.practicum.mainService.utils.exceptions.IllegalStatusException;
 
 public enum RequestStatusEnum {
     PENDING,
-    ACCEPTED,
+    CONFIRMED,
     REJECTED,
     CANCELED;
 
@@ -12,8 +12,8 @@ public enum RequestStatusEnum {
         switch (str) {
             case "REJECTED":
                 return REJECTED;
-            case "ACCEPTED":
-                return ACCEPTED;
+            case "CONFIRMED":
+                return CONFIRMED;
             case "CANCELED":
                 return CANCELED;
             case "PENDING":

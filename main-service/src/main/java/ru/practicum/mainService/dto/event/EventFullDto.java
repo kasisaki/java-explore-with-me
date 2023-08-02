@@ -1,5 +1,6 @@
 package ru.practicum.mainService.dto.event;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,6 +10,8 @@ import ru.practicum.mainService.utils.enums.EventStatusEnum;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.utils.Constants.DATE_PATTERN;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,6 +20,7 @@ public class EventFullDto extends EventShortDto {
     private LocalDateTime publishedOn;
     private Boolean requestModeration;
     private EventStatusEnum state;
+    @JsonFormat(pattern = DATE_PATTERN)
     private LocalDateTime createdOn;
     private String description;
     private Integer participantLimit = 0;

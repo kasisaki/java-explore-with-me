@@ -3,6 +3,7 @@ package ru.practicum.mainService.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.mainService.dto.category.CategoryDto;
 import ru.practicum.mainService.dto.category.NewCategoryDto;
 import ru.practicum.mainService.mappers.CategoryMapper;
@@ -19,6 +20,7 @@ import static ru.practicum.mainService.mappers.CategoryMapper.*;
 public class CategoryService {
     private final CategoryRepository categoryRepository;
 
+    @Transactional
     public CategoryDto createCategory(NewCategoryDto newCategoryDto) {
         return categoryToDto(
                 categoryRepository.save(
@@ -27,6 +29,7 @@ public class CategoryService {
         );
     }
 
+    @Transactional
     public void deleteCategory(Long catId) {
         if (!categoryRepository.existsById(catId)) {
             throw new ElementNotFoundException("Category with id " + catId + " does not exist");
@@ -34,6 +37,7 @@ public class CategoryService {
         categoryRepository.deleteById(catId);
     }
 
+    @Transactional
     public CategoryDto updateCategory(Long catId, NewCategoryDto newCategoryDto) {
         return categoryToDto(
                 categoryRepository.save(

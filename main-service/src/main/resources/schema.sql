@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS requests
     requestor_id BIGINT REFERENCES users (id) ON DELETE CASCADE,
     created      TIMESTAMP WITHOUT TIME ZONE,
     item_id      BIGINT REFERENCES events (id) ON DELETE SET NULL,
+    event_id     BIGINT REFERENCES events (id) ON DELETE SET NULL,
     status       VARCHAR(25),
     CONSTRAINT pk_request_id PRIMARY KEY (id)
 );

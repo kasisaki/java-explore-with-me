@@ -13,6 +13,7 @@ public class CategoryMapper {
 
     public static Category mapCategoryDtoToCategory(CategoryDto categoryDto) {
         return Category.builder()
+                .id(categoryDto.getId())
                 .name(categoryDto.getName())
                 .build();
     }

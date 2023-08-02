@@ -4,11 +4,9 @@ import lombok.RequiredArgsConstructor;
 import ru.practicum.mainService.dto.compilation.CompilationDto;
 import ru.practicum.mainService.dto.compilation.NewCompilationDto;
 import ru.practicum.mainService.models.Compilation;
-import ru.practicum.mainService.repositories.EventRepository;
 
 @RequiredArgsConstructor
 public class CompilationMapper {
-    private final EventRepository eventRepository;
 
     public static CompilationDto compToDto(Compilation compilation) {
         if (compilation == null) {

@@ -18,8 +18,7 @@ import static ru.practicum.mainService.mappers.CategoryMapper.mapCategoryDtoToCa
 import static ru.practicum.mainService.mappers.UserMapper.userShortDtoToUser;
 import static ru.practicum.mainService.mappers.UserMapper.userToShortDto;
 import static ru.practicum.mainService.utils.enums.EventStatusEnum.*;
-import static ru.practicum.mainService.utils.enums.StateActionEnum.PUBLISH_EVENT;
-import static ru.practicum.mainService.utils.enums.StateActionEnum.REJECT_EVENT;
+import static ru.practicum.mainService.utils.enums.StateActionEnum.*;
 
 
 @Data
@@ -60,8 +59,7 @@ public class EventMapper {
     }
 
     // TODO:         event.setCategory(updateDto.getCategory());
-    public static <T extends UpdateEventUserRequest> Event updateAdminDtoToEvent(T updateDto, Event event, Location location) {
-        LocalDateTime now = LocalDateTime.now();
+    public static <T extends UpdateEventUserRequest> Event updateDtoToEvent(T updateDto, Event event, Location location) {
 
         if (updateDto.getAnnotation() != null) {
             event.setAnnotation(updateDto.getAnnotation());
@@ -93,19 +91,25 @@ public class EventMapper {
                             "Событие можно публиковать, только если оно в состоянии ожидания публикации"
                     );
                 }
+                if (!LocalDateTime.now().isBefore(event.getEventDate().minusHours(1))) {
+                    throw new ConflictException("Дата начала изменяемого события должна быть " +
+                            "не ранее чем за час от даты публикации.");
+                }
+                event.setPublishedOn(LocalDateTime.now());
                 event.setState(PUBLISHED);
+                log.info("Event is canceled");
+
 
             } else if (updateDto.getStateAction().equals(REJECT_EVENT)) {
                 if (event.getState().equals(PUBLISHED)) {
                     throw new ConflictException("Событие можно отклонить, только если оно еще не опубликовано");
                 }
-                event.setState(REJECTED);
+                event.setState(CANCELED);
+                log.info("Event is canceled");
+            } else if (updateDto.getStateAction().equals(CANCEL_REVIEW)) {
+                event.setState(CANCELED);
+                log.info("Event is canceled");
             }
-        }
-
-        if (!now.isBefore(event.getEventDate().minusHours(1))) {
-            throw new ConflictException("Дата начала изменяемого события должна быть " +
-                    "не ранее чем за час от даты публикации.");
         }
 
         return event;
@@ -116,6 +120,7 @@ public class EventMapper {
             return null;
         }
         Event event = new Event();
+        event.setCreatedOn(LocalDateTime.now());
         event.setAnnotation(newEvent.getAnnotation());
         event.setCategory(mapCategoryDtoToCategory(newEvent.getCategory()));
         event.setDescription(newEvent.getDescription());
@@ -123,9 +128,7 @@ public class EventMapper {
         event.setLocation(location);
         event.setRequestModeration(newEvent.getRequestModeration());
         event.setTitle(newEvent.getTitle());
-
         event.setInitiator(userShortDtoToUser(user));
-        event.setCreatedOn(LocalDateTime.now());
         event.setState(PENDING);
 
         if (newEvent.getParticipantLimit() == null) {

@@ -8,10 +8,13 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.StatHitDto;
 import ru.practicum.mainService.dto.event.*;
 import ru.practicum.mainService.dto.location.LocationDto;
+import ru.practicum.mainService.dto.request.ParticipationRequestDto;
 import ru.practicum.mainService.dto.user.UserShortDto;
 import ru.practicum.mainService.mappers.EventMapper;
+import ru.practicum.mainService.mappers.RequestMapper;
 import ru.practicum.mainService.models.Event;
 import ru.practicum.mainService.models.Location;
+import ru.practicum.mainService.models.Request;
 import ru.practicum.mainService.repositories.EventRepository;
 import ru.practicum.mainService.repositories.LocationRepository;
 import ru.practicum.mainService.repositories.RequestRepository;
@@ -35,7 +38,9 @@ import static ru.practicum.mainService.mappers.EventMapper.*;
 import static ru.practicum.mainService.mappers.LocationMapper.dtoToLocation;
 import static ru.practicum.mainService.mappers.UserMapper.userToShortDto;
 import static ru.practicum.mainService.utils.enums.EventStatusEnum.CANCELED;
-import static ru.practicum.mainService.utils.enums.RequestStatusEnum.ACCEPTED;
+import static ru.practicum.mainService.utils.enums.EventStatusEnum.PENDING;
+import static ru.practicum.mainService.utils.enums.RequestStatusEnum.CONFIRMED;
+import static ru.practicum.mainService.utils.enums.RequestStatusEnum.REJECTED;
 import static ru.practicum.mainService.utils.enums.SortEventsEnum.VIEWS;
 import static ru.practicum.utils.Constants.DATE_PATTERN;
 
@@ -53,7 +58,7 @@ public class EventService {
     //Public service
 
     // TODO информация о каждом событии должна включать в себя количество просмотров и количество уже одобренных заявок на участие
-    public List<EventShortDto> getShortEventsFilter(String text, List<Integer> categoriesId, Boolean paid,
+    public List<EventShortDto> getShortEventsFilter(String text, List<Long> categoriesId, Boolean paid,
                                                     LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                     Boolean onlyAvailable, SortEventsEnum sort, int from, int size,
                                                     HttpServletRequest request) {
@@ -64,27 +69,32 @@ public class EventService {
                 request.getRemoteAddr(),
                 "ewm-events-service",
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN))));
+        List<Event> events;
+        if (onlyAvailable) {
+            events = eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd);
+        } else {
+            events = eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd);
+        }
 
-        List<EventShortDto> events = fillViewsForList(
-                eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd, onlyAvailable)
-                        .stream()
-                        .map(EventMapper::eventToShortDto)
-                        .map(this::setNumberOfConfirmedRequest)
-                        .collect(Collectors.toList()));
+        List<EventShortDto> eventDtos = fillViewsForListAndReturn(events
+                .stream()
+                .map(EventMapper::eventToShortDto)
+                .map(this::setNumberOfConfirmedRequest)
+                .collect(Collectors.toList()));
 
         if (sort == null) {
-            return events.stream()
+            return eventDtos.stream()
                     .skip(from)
                     .limit(size)
                     .collect(Collectors.toList());
         } else if (sort.equals(VIEWS)) {
-            return events.stream()
+            return eventDtos.stream()
                     .sorted(Comparator.comparing(EventShortDto::getViews))
                     .skip(from)
                     .limit(size)
                     .collect(Collectors.toList());
         }
-        return events.stream()
+        return eventDtos.stream()
                 .sorted(Comparator.comparing(EventShortDto::getEventDate))
                 .skip(from)
                 .limit(size)
@@ -97,15 +107,13 @@ public class EventService {
                 "ewm-events-service",
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN))));
 
-        return fillViewsForList(
-                List.of(
-                        setNumberOfConfirmedRequest(
-                                eventToFullEventDto(
-                                        eventRepository.findById(eventId).orElseThrow()
-                                )
+        return setViewsOfEventAndReturn(
+                setNumberOfConfirmedRequest(
+                        eventToFullEventDto(
+                                eventRepository.findById(eventId).orElseThrow()
                         )
                 )
-        ).get(0);
+        );
     }
 
 
@@ -118,86 +126,122 @@ public class EventService {
                 .map(EventMapper::eventToShortDto)
                 .map(this::setNumberOfConfirmedRequest)
                 .collect(Collectors.toList());
-        return fillViewsForList(events);
+        return fillViewsForListAndReturn(events);
     }
 
     public EventFullDto getFullEventOfUser(Long userId, Long eventId) {
         checkUser(userId);
-        return fillViewsForList(
-                List.of(
-                        setNumberOfConfirmedRequest(
-                                eventToFullEventDto(
-                                        eventRepository.findFirstByIdAndInitiatorId(eventId, userId).orElseThrow()
-                                )
+        return setViewsOfEventAndReturn(
+                setNumberOfConfirmedRequest(
+                        eventToFullEventDto(
+                                eventRepository.findFirstByIdAndInitiatorId(eventId, userId).orElseThrow()
                         )
                 )
-        ).get(0);
+        );
     }
 
-    public EventFullDto createEvent(Long userId, NewEventDto createEventDto) {
+    @Transactional
+    public EventFullDto createEventByUser(Long userId, NewEventDto createEventDto) {
         UserShortDto user = userToShortDto(userRepository.findById(userId).orElseThrow());
         if (createEventDto.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {
             throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, " +
                     "чем через два часа от текущего момента ");
         }
-        return fillViewsForList(
-                List.of(
-                        setNumberOfConfirmedRequest(
-                                eventToFullEventDto(
-                                        eventRepository.save(
-                                                createDtoToEvent(
-                                                        createEventDto, saveLocation(createEventDto.getLocation()), user)
-                                        )
+        return setViewsOfEventAndReturn(
+                setNumberOfConfirmedRequest(
+                        eventToFullEventDto(
+                                eventRepository.save(
+                                        createDtoToEvent(
+                                                createEventDto, saveLocation(createEventDto.getLocation()), user)
                                 )
                         )
                 )
-        ).get(0);
+        );
     }
 
-    public EventFullDto updateUserEvent(Long userId, Long eventId, UpdateEventUserRequest updateDto) {
+    @Transactional
+    public EventFullDto updateEventByUser(Long userId, Long eventId, UpdateEventUserRequest updateDto) {
         checkUser(userId);
         Event event = eventRepository.findById(eventId).orElseThrow();
-        if (!event.getState().equals(CANCELED) || !event.getRequestModeration()) {
+        if (!event.getState().equals(CANCELED) && !event.getState().equals(PENDING)) {
             throw new ConflictException("Изменить можно только отмененные события " +
                     "или события в состоянии ожидания модерации");
         }
-        if (updateDto.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {
+        if (event.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {
             throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, " +
                     "чем через два часа от текущего момента ");
         }
-        return fillViewsForList(
-                List.of(
-                        setNumberOfConfirmedRequest(
-                                eventToFullEventDto(
-                                        eventRepository.save(
-                                                updateAdminDtoToEvent(
-                                                        updateDto, event, saveLocation(updateDto.getLocation())
-                                                )
-                                        )
+        return setViewsOfEventAndReturn(
+                setNumberOfConfirmedRequest(
+                        eventToFullEventDto(
+                                eventRepository.save(
+                                        updateDtoToEvent(
+                                                updateDto, event, updateDto.getLocation() == null
+                                                        ? event.getLocation()
+                                                        : saveLocation(updateDto.getLocation()))
                                 )
                         )
                 )
-        ).get(0);
+        );
+    }
+
+    public List<ParticipationRequestDto> getEventRequestByUser(Long userId, Long eventId) {
+        checkUser(userId);
+        checkEvent(eventId);
+        return requestRepository.findAllByEventId(eventId).stream()
+                .map(RequestMapper::requestToRequestDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public EventRequestStatusUpdateResult updateEventRequestByUser(Long userId, Long eventId,
+                                                                   EventRequestStatusUpdateRequest updateRequest) {
+        checkUser(userId);
+        if (!eventRepository.findById(eventId).orElseThrow().getInitiator().getId().equals(userId)) {
+            throw new ConflictException("Event with id " + eventId + " is not initialized by user " + userId);
+        }
+        Integer participantLimit = eventRepository.findById(eventId).orElseThrow().getParticipantLimit();
+        Integer acceptedRequestCount = requestRepository.countByEventIdAndStatus(eventId, CONFIRMED);
+        if (participantLimit < acceptedRequestCount + updateRequest.getRequestIds().size()) {
+            throw new ConflictException("Запрос превысит количество лимит участников");
+        }
+        List<Request> requests = requestRepository.findAllByIdIn(updateRequest.getRequestIds())
+                .stream()
+                .peek(request -> request.setStatus(updateRequest.getStatus()))
+                .collect(Collectors.toList());
+
+        requestRepository.saveAll(requests);
+        List<ParticipationRequestDto> confirmedRequests =
+                requestRepository.findAllByEventIdAndStatus(eventId, CONFIRMED)
+                        .stream()
+                        .map(RequestMapper::requestToRequestDto)
+                        .collect(Collectors.toList());
+        List<ParticipationRequestDto> rejectedRequests =
+                requestRepository.findAllByEventIdAndStatus(eventId, REJECTED).stream()
+                        .map(RequestMapper::requestToRequestDto)
+                        .collect(Collectors.toList());
+        return new EventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
     }
 
     // Admin services
     @Transactional
-    public EventFullDto updateEvent(Long eventId, UpdateEventAdminRequest updateDto) {
-        Event event = eventRepository.findById(eventId).orElseThrow();
-
-
+    public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest updateDto) {
+        Event event = eventRepository.findById(eventId).orElseThrow(
+                () -> new ElementNotFoundException("Event with id " + eventId + " does not exist")
+        );
+        log.error("Event update by Admin event from repo + {}", event.toString());
         Event updatedEvent = eventRepository.save(
-                updateAdminDtoToEvent(updateDto, event,
+                updateDtoToEvent(updateDto, event,
                         updateDto.getLocation() == null ? event.getLocation() : saveLocation(updateDto.getLocation())));
 
-        return fillViewsForList(
-                List.of(
-                        setNumberOfConfirmedRequest(
-                                eventToFullEventDto(updatedEvent
-                                )
+        log.error("Event update by Admin event updated + {}", updatedEvent);
+
+        return setViewsOfEventAndReturn(
+                setNumberOfConfirmedRequest(
+                        eventToFullEventDto(updatedEvent
                         )
                 )
-        ).get(0);
+        );
     }
 
     public List<EventFullDto> getFullEvents(Set<Long> userIds, List<EventStatusEnum> states, List<Long> categories,
@@ -210,20 +254,20 @@ public class EventService {
                 .map(this::setNumberOfConfirmedRequest)
                 .collect(Collectors.toList());
 
-        return fillViewsForList(events);
+        return fillViewsForListAndReturn(events);
     }
 
 
     // Private methods
 
-    private <T extends EventShortDto> List<T> fillViewsForList(List<T> events) {
+    private <T extends EventShortDto> List<T> fillViewsForListAndReturn(List<T> events) {
         List<String> listOfUris = events.stream()
                 .map(T::getId)
                 .map(Object::toString)
                 .map(s -> "/events/" + s)
                 .collect(Collectors.toList());
 
-        Object bodyWithViews = statClient.getEventViews(listOfUris).getBody();
+        Object bodyWithViews = statClient.getHitsOfUris(listOfUris).getBody();
 
         return events.stream()
                 .peek(event -> {
@@ -239,8 +283,24 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
+    private <T extends EventShortDto> T setViewsOfEventAndReturn(T event) {
+        Object bodyWithViews = statClient.getHitsOfUri("/events/" + event.getId()).getBody();
+        Object views;
+        if (bodyWithViews instanceof LinkedHashMap && event.getId() != null) {
+            views = ((LinkedHashMap<?, ?>) bodyWithViews).get(event.getId().toString());
+            if (views != null) {
+                event.setViews(Long.parseLong(views.toString()));
+                return event;
+            }
+        }
+        event.setViews(0L);
+        return event;
+    }
+
     private <T extends EventShortDto> T setNumberOfConfirmedRequest(T event) {
-        requestRepository.countByEventIdAndStatus(event.getId(), ACCEPTED);
+        event.setConfirmedRequests(
+                requestRepository.countByEventIdAndStatus(event.getId(), CONFIRMED)
+        );
         return event;
     }
 

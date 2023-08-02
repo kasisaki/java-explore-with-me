@@ -2,8 +2,8 @@ package ru.practicum.mainService.dto.event;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import ru.practicum.mainService.dto.category.CategoryDto;
 import ru.practicum.mainService.dto.location.LocationDto;
-import ru.practicum.mainService.models.Category;
 import ru.practicum.mainService.utils.enums.StateActionEnum;
 
 import javax.validation.constraints.Size;
@@ -17,7 +17,7 @@ public class UpdateEventUserRequest {
     @Size(min = 20, max = 7000)
     private String annotation;
 
-    private Category category;
+    private CategoryDto category;
 
     @Size(min = 20, max = 7000)
     private String description;
