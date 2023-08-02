@@ -10,6 +10,7 @@ import ru.practicum.mainService.dto.category.CategoryDto;
 import ru.practicum.mainService.service.CategoryService;
 
 import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
@@ -21,8 +22,9 @@ public class OpenCategoryController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public ResponseEntity<List<CategoryDto>> getCats(@RequestParam(name = "from", defaultValue = "0") Integer from,
-                                                     @RequestParam(name = "size", defaultValue = "10") Integer size) {
+    public ResponseEntity<List<CategoryDto>> getCats(
+            @PositiveOrZero @RequestParam(name = "from", defaultValue = "0") Integer from,
+            @Positive @RequestParam(name = "size", defaultValue = "10") Integer size) {
         log.info("Get categories request with from={}, size={}", from, size);
         return new ResponseEntity<>(categoryService.getCategories(from, size), HttpStatus.OK);
     }

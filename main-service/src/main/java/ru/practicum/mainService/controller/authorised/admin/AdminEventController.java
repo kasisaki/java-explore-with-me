@@ -32,9 +32,9 @@ public class AdminEventController {
 
     @GetMapping
     public ResponseEntity<List<EventFullDto>> getEvents(
-            @RequestParam(name = "users", required = false) Set<Long> users,
-            @RequestParam(name = "states", required = false) List<EventStatusEnum> states,
-            @RequestParam(name = "categories", required = false) List<Long> categories,
+            @RequestParam(name = "users", required = false) Set<@Positive Long> users,
+            @RequestParam(name = "states", required = false) List<@NotNull EventStatusEnum> states,
+            @RequestParam(name = "categories", required = false) List<@Positive Long> categories,
             @RequestParam(name = "rangeStart", required = false, defaultValue = START_DATE)
             @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeStart,
             @RequestParam(name = "rangeEnd", required = false, defaultValue = END_DATE)
@@ -50,7 +50,7 @@ public class AdminEventController {
     }
 
     @PatchMapping("/{eventId}")
-    public ResponseEntity<EventFullDto> updateEvent(@PathVariable @NotNull Long eventId,
+    public ResponseEntity<EventFullDto> updateEvent(@PathVariable @Positive Long eventId,
                                                     @RequestBody UpdateEventAdminRequest eventDto) {
         log.info("Update event with \nid: {} and \ndata:", eventId);
         return new ResponseEntity<>(eventService.updateEventByAdmin(eventId, eventDto), HttpStatus.OK);

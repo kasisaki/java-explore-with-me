@@ -26,12 +26,13 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse(BAD_REQUEST.value(), e.getMessage()), BAD_REQUEST);
     }
 
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<Object> handleValidationException(MethodArgumentNotValidException ex, ErrorResponse response) {
 
         log.error(ex.getMessage());
-        return new ResponseEntity<>(new ErrorResponse(BAD_REQUEST.value(), ex.getLocalizedMessage()), BAD_REQUEST);
+        response.setStatusCode(BAD_REQUEST.value());
+        response.setError(ex.getMessage());
+        return new ResponseEntity<>(response, BAD_REQUEST);
     }
 
     @ExceptionHandler

@@ -51,7 +51,8 @@ public class OpenEventController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EventFullDto> getEvent(@PathVariable("id") Long eventId, HttpServletRequest request) {
+    public ResponseEntity<EventFullDto> getEvent(
+            @PathVariable("id") @Positive Long eventId, HttpServletRequest request) {
         log.info("Get event with id: {}, request: {}", eventId, request);
         return ResponseEntity.status(200).body(eventService.getEvent(eventId, request));
     }

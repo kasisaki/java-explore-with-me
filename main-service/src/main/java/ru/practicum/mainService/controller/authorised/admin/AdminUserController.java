@@ -11,6 +11,8 @@ import ru.practicum.mainService.dto.user.UserDto;
 import ru.practicum.mainService.service.UserService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
@@ -27,14 +29,14 @@ public class AdminUserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> getUsers(@RequestParam final List<Long> ids,
-                                                  @RequestParam(required = false, defaultValue = "0") Integer from,
-                                                  @RequestParam(required = false, defaultValue = "10") Integer size) {
+    public ResponseEntity<List<UserDto>> getUsers(@RequestParam final List<@Positive Long> ids,
+                                                  @PositiveOrZero @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                  @Positive @RequestParam(required = false, defaultValue = "10") Integer size) {
         return new ResponseEntity<>(service.getUsers(ids, from, size), HttpStatus.OK);
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable @Positive Long userId) {
         service.delete(userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

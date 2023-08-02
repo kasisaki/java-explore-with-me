@@ -10,6 +10,7 @@ import ru.practicum.mainService.dto.compilation.NewCompilationDto;
 import ru.practicum.mainService.service.CompilationService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 
 @Slf4j
 @RestController
@@ -24,12 +25,12 @@ public class AdminCompilationController {
     }
 
     @PatchMapping("/{compId}")
-    public ResponseEntity<CompilationDto> updateCompilation(@PathVariable Long compId) {
+    public ResponseEntity<CompilationDto> updateCompilation(@PathVariable @Positive Long compId) {
         return new ResponseEntity<>(compilationService.update(compId), HttpStatus.OK);
     }
 
     @DeleteMapping("/{compId}")
-    public ResponseEntity<CompilationDto> deleteCompilation(@PathVariable Long compId) {
+    public ResponseEntity<CompilationDto> deleteCompilation(@PathVariable @Positive Long compId) {
         compilationService.delete(compId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
