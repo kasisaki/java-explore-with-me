@@ -15,14 +15,16 @@ import java.util.List;
 public class StatClient extends BaseClient {
 
     @Autowired
-    public StatClient(@Value("http://localhost:9090") String serverUrl, RestTemplateBuilder builder) {
+    public StatClient(@Value("${stats-server.url}") String serverUrl, RestTemplateBuilder builder) {
         super(
+
                 builder
                         .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
                         .requestFactory(HttpComponentsClientHttpRequestFactory::new)
                         .build()
         );
     }
+
 
     public ResponseEntity<Object> appendStats(StatHitDto requestDto) {
         return post("/hit", requestDto);
@@ -41,15 +43,6 @@ public class StatClient extends BaseClient {
         String urisString = "";
         if (!(uris == null) && !uris.isEmpty()) {
             urisString = "&uris=" + String.join("&uris=", uris);
-        }
-
-        return get("/stats/hits?" + urisString);
-    }
-
-    public ResponseEntity<Object> getHitsOfUri(String uri) {
-        String urisString = "";
-        if (!(uri == null) && !uri.isEmpty()) {
-            urisString = "&uris=" + uri;
         }
 
         return get("/stats/hits?" + urisString);

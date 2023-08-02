@@ -16,15 +16,12 @@ spring:
       mode: always
 logging:
   level:
-    org:
-      springframework:
-        orm:
-          jpa:
-            JpaTransactionManager: DEBUG
-            nodeValue: INFO
-        transaction:
-          interceptor: TRACE
-          nodeValue: INFO
+    ru.practicum.mainService: debug
+stats-server:
+  url: http://localhost:9090
+
+app:
+  name: ewm-main-service
 
 server:
   port: 8080

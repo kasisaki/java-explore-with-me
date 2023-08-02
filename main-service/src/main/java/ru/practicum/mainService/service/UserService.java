@@ -9,7 +9,6 @@ import ru.practicum.mainService.mappers.UserMapper;
 import ru.practicum.mainService.repositories.UserRepository;
 import ru.practicum.mainService.utils.exceptions.ElementNotFoundException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,8 +21,11 @@ public class UserService {
     private final UserRepository userRepository;
 
     public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
-        if (ids == null || ids.size() == 0) {
-            return new ArrayList<>();
+        if (ids == null || ids.isEmpty()) {
+            return userRepository.findAll(PageRequest.of(from, size))
+                    .stream()
+                    .map(UserMapper::userToDto)
+                    .collect(Collectors.toList());
         }
         return userRepository.getAllByIdIn(ids, PageRequest.of(from, size))
                 .stream()

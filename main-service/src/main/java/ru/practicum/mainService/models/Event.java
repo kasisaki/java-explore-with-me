@@ -64,4 +64,30 @@ public class Event {
     @Column
     @JsonFormat(pattern = DATE_PATTERN)
     private LocalDateTime publishedOn;
+
+    @Column
+    private Long views;
+
+    @Column
+    private Integer confirmedRequests;
+
+    @Column
+    private Integer comments;
+
+    @Column
+    private Boolean disableComments = false; //default value
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", categoryId=" + category.getId() +
+                ", eventDate=" + eventDate +
+                ", initiatorId=" + initiator.getId() +
+                ", title='" + title + '\'' +
+                ", state=" + state +
+                ", views=" + views +
+                ", confirmedRequests=" + confirmedRequests +
+                '}';
+    }
 }

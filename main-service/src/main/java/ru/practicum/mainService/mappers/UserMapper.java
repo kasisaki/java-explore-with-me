@@ -6,6 +6,11 @@ import ru.practicum.mainService.dto.user.UserShortDto;
 import ru.practicum.mainService.models.User;
 
 public class UserMapper {
+
+    private UserMapper() {
+        throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     public static User newToUser(NewUserRequest newUserRequest) {
         if (newUserRequest == null) {
             return null;

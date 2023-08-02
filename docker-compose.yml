@@ -12,6 +12,31 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
 
+  main-service:
+    ports:
+      - "8080:8080"
+    build: ./main-service
+    image: main-service
+    container_name: main-service
+    depends_on:
+      - stats-server
+      - main-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/main-db
+      - STATS-SERVER_URL=http://stats-server:9090
+
+  main-db:
+    image: postgres:14-alpine
+    container_name: main-db
+    ports:
+      - "6542:5432"
+    volumes:
+      - main-db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=main-db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+
   stats-db:
     image: postgres:14-alpine
     container_name: stats-db
@@ -24,32 +49,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
 
-  main-service:
-    ports:
-      - "8080:8080"
-    build: ./main-service
-    image: main-service
-    container_name: main-service
-    depends_on:
-      - stats-server
-      - main-db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://main-db:5432/main_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-
-  main-db:
-    image: postgres:14-alpine
-    container_name: main-db
-    ports:
-      - "6542:5432"
-    volumes:
-      - main-db:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=main_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-
 volumes:
   main-db:
   stats-db:
+
+

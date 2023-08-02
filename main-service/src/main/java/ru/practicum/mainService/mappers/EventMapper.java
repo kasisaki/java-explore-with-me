@@ -1,6 +1,5 @@
 package ru.practicum.mainService.mappers;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import ru.practicum.mainService.dto.event.EventFullDto;
 import ru.practicum.mainService.dto.event.EventShortDto;
@@ -9,6 +8,7 @@ import ru.practicum.mainService.dto.event.UpdateEventUserRequest;
 import ru.practicum.mainService.dto.user.UserShortDto;
 import ru.practicum.mainService.models.Event;
 import ru.practicum.mainService.models.Location;
+import ru.practicum.mainService.utils.exceptions.BadRequestException;
 import ru.practicum.mainService.utils.exceptions.ConflictException;
 
 import java.time.LocalDateTime;
@@ -21,9 +21,12 @@ import static ru.practicum.mainService.utils.enums.EventStatusEnum.*;
 import static ru.practicum.mainService.utils.enums.StateActionEnum.*;
 
 
-@Data
 @Slf4j
 public class EventMapper {
+
+    private EventMapper() {
+        throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
 
     public static EventFullDto eventToFullEventDto(Event event) {
         if (event == null) {
@@ -58,7 +61,6 @@ public class EventMapper {
         return shortEventResponseDto;
     }
 
-    // TODO:         event.setCategory(updateDto.getCategory());
     public static <T extends UpdateEventUserRequest> Event updateDtoToEvent(T updateDto, Event event, Location location) {
 
         if (updateDto.getAnnotation() != null) {
@@ -68,6 +70,9 @@ public class EventMapper {
             event.setDescription(updateDto.getDescription());
         }
         if (updateDto.getEventDate() != null) {
+            if (updateDto.getEventDate().isBefore(LocalDateTime.now())) {
+                throw new BadRequestException("Event date cannot be in the past");
+            }
             event.setEventDate(updateDto.getEventDate());
         }
         if (updateDto.getPaid() != null) {
@@ -109,6 +114,9 @@ public class EventMapper {
             } else if (updateDto.getStateAction().equals(CANCEL_REVIEW)) {
                 event.setState(CANCELED);
                 log.info("Event is canceled");
+            } else if (updateDto.getStateAction().equals(SEND_TO_REVIEW)) {
+                event.setState(PENDING);
+                log.info("Event is sent to REVIEW");
             }
         }
 
@@ -126,7 +134,11 @@ public class EventMapper {
         event.setDescription(newEvent.getDescription());
         event.setEventDate(newEvent.getEventDate());
         event.setLocation(location);
-        event.setRequestModeration(newEvent.getRequestModeration());
+        if (newEvent.getRequestModeration() == null) {
+            event.setRequestModeration(true);
+        } else {
+            event.setRequestModeration(newEvent.getRequestModeration());
+        }
         event.setTitle(newEvent.getTitle());
         event.setInitiator(userShortDtoToUser(user));
         event.setState(PENDING);

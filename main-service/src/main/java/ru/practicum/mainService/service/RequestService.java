@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 import static ru.practicum.mainService.mappers.RequestMapper.requestToRequestDto;
 import static ru.practicum.mainService.utils.enums.EventStatusEnum.PUBLISHED;
-import static ru.practicum.mainService.utils.enums.RequestStatusEnum.*;
+import static ru.practicum.mainService.utils.enums.StatusEnum.*;
 
 @Service
 @RequiredArgsConstructor
@@ -66,7 +66,7 @@ public class RequestService {
                 .requester(user)
                 .status(PENDING)
                 .build();
-        if (!event.getRequestModeration()) {
+        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             request.setStatus(CONFIRMED);
         }
 

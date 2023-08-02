@@ -3,6 +3,8 @@ package ru.practicum.mainService.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.StatHitDto;
@@ -21,6 +23,7 @@ import ru.practicum.mainService.repositories.RequestRepository;
 import ru.practicum.mainService.repositories.UserRepository;
 import ru.practicum.mainService.utils.enums.EventStatusEnum;
 import ru.practicum.mainService.utils.enums.SortEventsEnum;
+import ru.practicum.mainService.utils.exceptions.BadRequestException;
 import ru.practicum.mainService.utils.exceptions.ConflictException;
 import ru.practicum.mainService.utils.exceptions.ElementNotFoundException;
 import ru.practicum.statsClient.StatClient;
@@ -28,21 +31,20 @@ import ru.practicum.statsClient.StatClient;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.practicum.mainService.mappers.EventMapper.*;
 import static ru.practicum.mainService.mappers.LocationMapper.dtoToLocation;
 import static ru.practicum.mainService.mappers.UserMapper.userToShortDto;
-import static ru.practicum.mainService.utils.enums.EventStatusEnum.CANCELED;
-import static ru.practicum.mainService.utils.enums.EventStatusEnum.PENDING;
-import static ru.practicum.mainService.utils.enums.RequestStatusEnum.CONFIRMED;
-import static ru.practicum.mainService.utils.enums.RequestStatusEnum.REJECTED;
+import static ru.practicum.mainService.utils.DateUtils.getDatePatterned;
+import static ru.practicum.mainService.utils.enums.EventStatusEnum.*;
+import static ru.practicum.mainService.utils.enums.SortEventsEnum.COMMENTS;
 import static ru.practicum.mainService.utils.enums.SortEventsEnum.VIEWS;
+import static ru.practicum.mainService.utils.enums.StatusEnum.CONFIRMED;
+import static ru.practicum.mainService.utils.enums.StatusEnum.REJECTED;
 import static ru.practicum.utils.Constants.DATE_PATTERN;
+import static ru.practicum.utils.Constants.END_DATE;
 
 @Slf4j
 @Service
@@ -55,100 +57,105 @@ public class EventService {
     private final StatClient statClient;
 
 
-    //Public service
-
-    // TODO информация о каждом событии должна включать в себя количество просмотров и количество уже одобренных заявок на участие
-    public List<EventShortDto> getShortEventsFilter(String text, List<Long> categoriesId, Boolean paid,
+    // Public service
+    public List<EventShortDto> getShortEventsFilter(String app, String text, List<Long> categoriesId, Boolean paid,
                                                     LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                     Boolean onlyAvailable, SortEventsEnum sort, int from, int size,
                                                     HttpServletRequest request) {
+        statClient.appendStats(new StatHitDto(app,
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                getDatePatterned()));
+
         if (rangeStart == null) {
             rangeStart = LocalDateTime.now();
         }
-        statClient.appendStats(new StatHitDto(request.getRequestURI(),
-                request.getRemoteAddr(),
-                "ewm-events-service",
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN))));
+        if (rangeEnd == null) {
+            rangeEnd = LocalDateTime.parse(END_DATE, DateTimeFormatter.ofPattern(DATE_PATTERN));
+        }
+        if (rangeStart.isAfter(rangeEnd)) {
+            throw new BadRequestException("Invalid range");
+        }
+
+        Pageable pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "eventDate"));
+
+        if (sort != null && sort.equals(VIEWS)) {
+            pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "views"));
+        } else if (sort != null && sort.equals(COMMENTS)) {
+            pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "comments"));
+        }
+
         List<Event> events;
         if (onlyAvailable) {
-            events = eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd);
+            events = eventRepository
+                    .getShortEventsAvailableFilter(pageable, text, categoriesId, paid, rangeStart, rangeEnd)
+                    .toList();
         } else {
-            events = eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd);
+            events = eventRepository
+                    .getShortEventsFilter(pageable, text, categoriesId, paid, rangeStart, rangeEnd)
+                    .toList();
         }
 
-        List<EventShortDto> eventDtos = fillViewsForListAndReturn(events
+        return setViewsForListOfShortDto(events
                 .stream()
                 .map(EventMapper::eventToShortDto)
-                .map(this::setNumberOfConfirmedRequest)
+                .map(this::setRequestsForShortDto)
                 .collect(Collectors.toList()));
-
-        if (sort == null) {
-            return eventDtos.stream()
-                    .skip(from)
-                    .limit(size)
-                    .collect(Collectors.toList());
-        } else if (sort.equals(VIEWS)) {
-            return eventDtos.stream()
-                    .sorted(Comparator.comparing(EventShortDto::getViews))
-                    .skip(from)
-                    .limit(size)
-                    .collect(Collectors.toList());
-        }
-        return eventDtos.stream()
-                .sorted(Comparator.comparing(EventShortDto::getEventDate))
-                .skip(from)
-                .limit(size)
-                .collect(Collectors.toList());
     }
 
-    public EventFullDto getEvent(Long eventId, HttpServletRequest request) {
-        statClient.appendStats(new StatHitDto(request.getRequestURI(),
+
+    public EventFullDto getEvent(String app, Long eventId, HttpServletRequest request) {
+        statClient.appendStats(new StatHitDto(app,
+                request.getRequestURI(),
                 request.getRemoteAddr(),
-                "ewm-events-service",
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN))));
+                getDatePatterned()));
 
-        return setViewsOfEventAndReturn(
-                setNumberOfConfirmedRequest(
-                        eventToFullEventDto(
-                                eventRepository.findById(eventId).orElseThrow()
-                        )
+        Event event = eventRepository.findById(eventId).orElseThrow();
+
+        if (!event.getState().equals(PUBLISHED)) {
+            throw new ElementNotFoundException("Event with id " + event + " is not found");
+        }
+        List<EventFullDto> events = setViewsForListOfFullDto(List.of(
+                setRequestsForFull(
+                        eventToFullEventDto(event)
                 )
-        );
-    }
+        ));
 
+        return events.get(0);
+    }
 
     // User event services
-
     public List<EventShortDto> getShortEventsOfUser(Long userId, Integer pagingFrom, Integer pagingSize) {
         checkUser(userId);
         List<EventShortDto> events = eventRepository.findAllByInitiatorId(userId, PageRequest.of(pagingFrom, pagingSize))
                 .stream()
                 .map(EventMapper::eventToShortDto)
-                .map(this::setNumberOfConfirmedRequest)
+                .map(this::setRequestsForShortDto)
                 .collect(Collectors.toList());
-        return fillViewsForListAndReturn(events);
+        return setViewsForListOfShortDto(events);
     }
 
     public EventFullDto getFullEventOfUser(Long userId, Long eventId) {
         checkUser(userId);
-        return setViewsOfEventAndReturn(
-                setNumberOfConfirmedRequest(
+        List<EventFullDto> events = setViewsForListOfFullDto(List.of(
+                setRequestsForFull(
                         eventToFullEventDto(
-                                eventRepository.findFirstByIdAndInitiatorId(eventId, userId).orElseThrow()
+                                eventRepository.findByIdAndInitiatorId(eventId, userId).orElseThrow()
                         )
                 )
-        );
+        ));
+        return events.get(0);
     }
 
     @Transactional
     public EventFullDto createEventByUser(Long userId, NewEventDto createEventDto) {
         UserShortDto user = userToShortDto(userRepository.findById(userId).orElseThrow());
         if (createEventDto.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {
-            throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, " +
-                    "чем через два часа от текущего момента ");
+            throw new BadRequestException("The date and time for which the event is scheduled cannot be " +
+                    "earlier than two hours from the current moment");
         }
-        return setViewsOfEventAndReturn(
-                setNumberOfConfirmedRequest(
+        List<EventFullDto> events = setViewsForListOfFullDto(List.of(
+                setRequestsForFull(
                         eventToFullEventDto(
                                 eventRepository.save(
                                         createDtoToEvent(
@@ -156,7 +163,8 @@ public class EventService {
                                 )
                         )
                 )
-        );
+        ));
+        return events.get(0);
     }
 
     @Transactional
@@ -164,15 +172,14 @@ public class EventService {
         checkUser(userId);
         Event event = eventRepository.findById(eventId).orElseThrow();
         if (!event.getState().equals(CANCELED) && !event.getState().equals(PENDING)) {
-            throw new ConflictException("Изменить можно только отмененные события " +
-                    "или события в состоянии ожидания модерации");
+            throw new ConflictException("Only uploaded events or events pending moderation can be edited");
         }
         if (event.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {
-            throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, " +
-                    "чем через два часа от текущего момента ");
+            throw new ConflictException("The date and time for which the event is scheduled cannot be earlier " +
+                    "than two hours from the current moment");
         }
-        return setViewsOfEventAndReturn(
-                setNumberOfConfirmedRequest(
+        List<EventFullDto> events = setViewsForListOfFullDto(List.of(
+                setRequestsForFull(
                         eventToFullEventDto(
                                 eventRepository.save(
                                         updateDtoToEvent(
@@ -182,7 +189,8 @@ public class EventService {
                                 )
                         )
                 )
-        );
+        ));
+        return events.get(0);
     }
 
     public List<ParticipationRequestDto> getEventRequestByUser(Long userId, Long eventId) {
@@ -203,7 +211,7 @@ public class EventService {
         Integer participantLimit = eventRepository.findById(eventId).orElseThrow().getParticipantLimit();
         Integer acceptedRequestCount = requestRepository.countByEventIdAndStatus(eventId, CONFIRMED);
         if (participantLimit < acceptedRequestCount + updateRequest.getRequestIds().size()) {
-            throw new ConflictException("Запрос превысит количество лимит участников");
+            throw new ConflictException("The request will exceed the number of participants limit");
         }
         List<Request> requests = requestRepository.findAllByIdIn(updateRequest.getRequestIds())
                 .stream()
@@ -236,12 +244,13 @@ public class EventService {
 
         log.error("Event update by Admin event updated + {}", updatedEvent);
 
-        return setViewsOfEventAndReturn(
-                setNumberOfConfirmedRequest(
+        List<EventFullDto> events = setViewsForListOfFullDto(List.of(
+                setRequestsForFull(
                         eventToFullEventDto(updatedEvent
                         )
                 )
-        );
+        ));
+        return events.get(0);
     }
 
     public List<EventFullDto> getFullEvents(Set<Long> userIds, List<EventStatusEnum> states, List<Long> categories,
@@ -251,53 +260,75 @@ public class EventService {
                         userIds, states, categories, fromDate, toDate, PageRequest.of(pagingFrom, pagingSize))
                 .stream()
                 .map(EventMapper::eventToFullEventDto)
-                .map(this::setNumberOfConfirmedRequest)
+                .map(this::setRequestsForFull)
                 .collect(Collectors.toList());
 
-        return fillViewsForListAndReturn(events);
+        return setViewsForListOfFullDto(events);
+
     }
 
-
     // Private methods
+    private List<EventFullDto> setViewsForListOfFullDto(List<EventFullDto> events) {
+        List<Long> eventIds = events
+                .stream()
+                .map(EventFullDto::getId)
+                .collect(Collectors.toList());
 
-    private <T extends EventShortDto> List<T> fillViewsForListAndReturn(List<T> events) {
-        List<String> listOfUris = events.stream()
-                .map(T::getId)
+        Map<Long, Long> mapOfViews = getViewsForList(eventIds);
+
+
+        return events
+                .stream()
+                .peek(event -> event.setViews(mapOfViews.get(event.getId())))
+                .collect(Collectors.toList());
+    }
+
+    private List<EventShortDto> setViewsForListOfShortDto(List<EventShortDto> events) {
+        List<Long> eventIds = events
+                .stream()
+                .map(EventShortDto::getId)
+                .collect(Collectors.toList());
+
+        Map<Long, Long> mapOfViews = getViewsForList(eventIds);
+
+        return events
+                .stream()
+                .peek(event -> event.setViews(mapOfViews.get(event.getId())))
+                .collect(Collectors.toList());
+    }
+
+    private Map<Long, Long> getViewsForList(List<Long> eventIds) {
+        List<String> listOfUris = eventIds.stream()
                 .map(Object::toString)
                 .map(s -> "/events/" + s)
                 .collect(Collectors.toList());
 
-        Object bodyWithViews = statClient.getHitsOfUris(listOfUris).getBody();
 
-        return events.stream()
-                .peek(event -> {
-                    if (bodyWithViews instanceof LinkedHashMap && event.getId() != null) {
-                        Object views = ((LinkedHashMap<?, ?>) bodyWithViews).get(event.getId().toString());
-                        if (views != null) {
-                            event.setViews(Long.parseLong(views.toString()));
-                        } else {
-                            event.setViews(0L);
-                        }
-                    }
-                })
-                .collect(Collectors.toList());
+        Object bodyWithViews = statClient.getHitsOfUris(listOfUris).getBody();
+        Map<Long, Long> mapOfViews = new HashMap<>();
+
+        eventIds.forEach(id -> {
+            if (bodyWithViews instanceof LinkedHashMap && !eventIds.isEmpty()) {
+                Object views = ((LinkedHashMap<?, ?>) bodyWithViews).get(id.toString());
+                if (views != null) {
+                    mapOfViews.put(id, Long.parseLong(views.toString()));
+                } else {
+                    mapOfViews.put(id, 0L);
+                }
+            }
+        });
+        return mapOfViews;
     }
 
-    private <T extends EventShortDto> T setViewsOfEventAndReturn(T event) {
-        Object bodyWithViews = statClient.getHitsOfUri("/events/" + event.getId()).getBody();
-        Object views;
-        if (bodyWithViews instanceof LinkedHashMap && event.getId() != null) {
-            views = ((LinkedHashMap<?, ?>) bodyWithViews).get(event.getId().toString());
-            if (views != null) {
-                event.setViews(Long.parseLong(views.toString()));
-                return event;
-            }
-        }
-        event.setViews(0L);
+    private EventFullDto setRequestsForFull(EventFullDto event) {
+
+        event.setConfirmedRequests(
+                requestRepository.countByEventIdAndStatus(event.getId(), CONFIRMED)
+        );
         return event;
     }
 
-    private <T extends EventShortDto> T setNumberOfConfirmedRequest(T event) {
+    private EventShortDto setRequestsForShortDto(EventShortDto event) {
         event.setConfirmedRequests(
                 requestRepository.countByEventIdAndStatus(event.getId(), CONFIRMED)
         );

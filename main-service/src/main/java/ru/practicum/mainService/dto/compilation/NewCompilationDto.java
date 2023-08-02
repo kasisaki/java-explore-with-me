@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.util.Set;
@@ -19,5 +20,6 @@ public class NewCompilationDto {
 
     @NotEmpty
     @Size(max = 50)
+    @NotBlank
     private String title;
 }

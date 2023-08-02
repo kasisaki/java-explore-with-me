@@ -32,19 +32,34 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Page<Event> findAllByInitiatorId(Long userId, Pageable pageable);
 
-    Optional<Event> findFirstByIdAndInitiatorId(Long eventId, Long userId);
+    Optional<Event> findByIdAndInitiatorId(Long eventId, Long userId);
 
-    @Query("SELECT e FROM Event e WHERE " +
-            "((lower(e.annotation) LIKE lower(concat('%', :text, '%')) OR " +
-            "(lower(e.description) LIKE lower(concat('%', :text, '%')))) OR :text IS NULL) AND " +
-            "(e.category.id IN :categoriesId OR :categoriesId IS NULL) AND " +
-            "(e.paid = :paid OR :paid IS NULL) AND " +
-            "(e.eventDate BETWEEN :rangeStart AND :rangeEnd OR (:rangeStart IS NULL AND :rangeEnd IS NULL)) AND " +
-            "e.participantLimit > (SELECT COUNT(r) FROM requests r WHERE r.status = 'CONFIRMED' and r.event.id = e.id)" +
-            "ORDER BY e.eventDate")
-    List<Event> getShortEventsFilter(@Param("text") String text,
+    @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED' AND " +
+            "lower(e.annotation) LIKE lower(concat('%', :text, '%')) OR " +
+            "lower(e.description) LIKE lower(concat('%', :text, '%')) OR :text IS NULL AND " +
+            "e.category.id IN :categoriesId OR :categoriesId IS NULL AND " +
+            "e.paid = :paid OR :paid IS NULL AND " +
+            "(e.eventDate >= :rangeStart) AND (e.eventDate <= :rangeEnd)")
+    Page<Event> getShortEventsFilter(Pageable pageable,
+                                     @Param("text") String text,
                                      @Param("categoriesId") List<Long> categoriesId,
                                      @Param("paid") Boolean paid,
                                      @Param("rangeStart") LocalDateTime rangeStart,
                                      @Param("rangeEnd") LocalDateTime rangeEnd);
+
+    @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED' AND " +
+            "lower(e.annotation) LIKE lower(concat('%', :text, '%')) OR " +
+            "lower(e.description) LIKE lower(concat('%', :text, '%')) OR :text IS NULL AND " +
+            "e.category.id IN :categoriesId OR :categoriesId IS NULL AND " +
+            "e.paid = :paid OR :paid IS NULL AND " +
+            "e.eventDate >= :rangeStart AND e.eventDate <= :rangeEnd AND " +
+            "e.participantLimit > e.confirmedRequests")
+    Page<Event> getShortEventsAvailableFilter(Pageable pageable,
+                                              @Param("text") String text,
+                                              @Param("categoriesId") List<Long> categoriesId,
+                                              @Param("paid") Boolean paid,
+                                              @Param("rangeStart") LocalDateTime rangeStart,
+                                              @Param("rangeEnd") LocalDateTime rangeEnd);
+
+
 }
