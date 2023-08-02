@@ -64,4 +64,10 @@ public class Event {
     @Column
     @JsonFormat(pattern = DATE_PATTERN)
     private LocalDateTime publishedOn;
+
+    @Column
+    private Long views;
+
+    @Column
+    private Integer confirmedRequests;
 }

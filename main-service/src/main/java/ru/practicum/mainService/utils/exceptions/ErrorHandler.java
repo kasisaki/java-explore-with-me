@@ -2,14 +2,11 @@ package ru.practicum.mainService.utils.exceptions;
 
 import lombok.extern.slf4j.Slf4j;
 import org.postgresql.util.PSQLException;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import ru.practicum.mainService.utils.exceptions.errorResponse.ErrorResponse;
 
 import java.util.NoSuchElementException;
@@ -18,7 +15,8 @@ import static org.springframework.http.HttpStatus.*;
 
 @Slf4j
 @RestControllerAdvice
-public class ErrorHandler extends ResponseEntityExceptionHandler {
+
+public class ErrorHandler {
     // наследуемся чтобы не писать множество стандартных обработчиков
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> catchBadRequestException(final BadRequestException e) {
@@ -27,12 +25,9 @@ public class ErrorHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity<Object> handleValidationException(MethodArgumentNotValidException ex, ErrorResponse response) {
-
-        log.error(ex.getMessage());
-        response.setStatusCode(BAD_REQUEST.value());
-        response.setError(ex.getMessage());
-        return new ResponseEntity<>(response, BAD_REQUEST);
+    public ResponseEntity<ErrorResponse> handleBadRequest(MethodArgumentNotValidException e) {
+        log.error(e.getMessage());
+        return new ResponseEntity<>(new ErrorResponse(BAD_REQUEST.value(), e.getMessage()), BAD_REQUEST);
     }
 
     @ExceptionHandler
