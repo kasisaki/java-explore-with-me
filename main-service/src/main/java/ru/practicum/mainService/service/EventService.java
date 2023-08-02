@@ -3,6 +3,8 @@ package ru.practicum.mainService.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.StatHitDto;
@@ -23,12 +25,12 @@ import ru.practicum.mainService.utils.enums.EventStatusEnum;
 import ru.practicum.mainService.utils.enums.SortEventsEnum;
 import ru.practicum.mainService.utils.exceptions.ConflictException;
 import ru.practicum.mainService.utils.exceptions.ElementNotFoundException;
+import ru.practicum.mainService.utils.exceptions.IllegalStatusException;
 import ru.practicum.statsClient.StatClient;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -41,6 +43,7 @@ import static ru.practicum.mainService.utils.enums.EventStatusEnum.CANCELED;
 import static ru.practicum.mainService.utils.enums.EventStatusEnum.PENDING;
 import static ru.practicum.mainService.utils.enums.RequestStatusEnum.CONFIRMED;
 import static ru.practicum.mainService.utils.enums.RequestStatusEnum.REJECTED;
+import static ru.practicum.mainService.utils.enums.SortEventsEnum.EVENT_DATE;
 import static ru.practicum.mainService.utils.enums.SortEventsEnum.VIEWS;
 import static ru.practicum.utils.Constants.DATE_PATTERN;
 
@@ -69,36 +72,64 @@ public class EventService {
                 request.getRemoteAddr(),
                 "ewm-events-service",
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN))));
+        Pageable pageable;
+
+        if (sort.equals(VIEWS)) {
+            pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "views"));
+        } else if (sort.equals(EVENT_DATE)) {
+            pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "eventDate"));
+        } else {
+            throw new IllegalStatusException("Unknown sort parameter");
+        }
+        log.error(rangeStart.toString());
+        log.error("RANGE END");
+        log.error(rangeEnd.toString());
         List<Event> events;
         if (onlyAvailable) {
-            events = eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd);
+            events = eventRepository.
+                    getShortEventsAvailableFilter(pageable, text, categoriesId, paid, rangeStart, rangeEnd)
+                    .toList();
         } else {
-            events = eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd);
+            events = eventRepository
+                    .getShortEventsFilter(pageable, text, categoriesId, paid, rangeStart, rangeEnd)
+                    .toList();
         }
 
-        List<EventShortDto> eventDtos = fillViewsForListAndReturn(events
+        return fillViewsForListAndReturn(events
                 .stream()
                 .map(EventMapper::eventToShortDto)
                 .map(this::setNumberOfConfirmedRequest)
                 .collect(Collectors.toList()));
-
-        if (sort == null) {
-            return eventDtos.stream()
-                    .skip(from)
-                    .limit(size)
-                    .collect(Collectors.toList());
-        } else if (sort.equals(VIEWS)) {
-            return eventDtos.stream()
-                    .sorted(Comparator.comparing(EventShortDto::getViews))
-                    .skip(from)
-                    .limit(size)
-                    .collect(Collectors.toList());
-        }
-        return eventDtos.stream()
-                .sorted(Comparator.comparing(EventShortDto::getEventDate))
-                .skip(from)
-                .limit(size)
-                .collect(Collectors.toList());
+//        List<Event> events;
+//        if (onlyAvailable) {
+//            events = eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd);
+//        } else {
+//            events = eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd);
+//        }
+//
+//        List<EventShortDto> eventDtos = fillViewsForListAndReturn(events
+//                .stream()
+//                .map(EventMapper::eventToShortDto)
+//                .map(this::setNumberOfConfirmedRequest)
+//                .collect(Collectors.toList()));
+//
+//        if (sort == null) {
+//            return eventDtos.stream()
+//                    .skip(from)
+//                    .limit(size)
+//                    .collect(Collectors.toList());
+//        } else if (sort.equals(VIEWS)) {
+//            return eventDtos.stream()
+//                    .sorted(Comparator.comparing(EventShortDto::getViews))
+//                    .skip(from)
+//                    .limit(size)
+//                    .collect(Collectors.toList());
+//        }
+//        return eventDtos.stream()
+//                .sorted(Comparator.comparing(EventShortDto::getEventDate))
+//                .skip(from)
+//                .limit(size)
+//                .collect(Collectors.toList());
     }
 
     public EventFullDto getEvent(Long eventId, HttpServletRequest request) {

@@ -24,7 +24,7 @@ import static ru.practicum.utils.Constants.DATE_PATTERN;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("events")
-public class OpenEventController {
+public class EventPublicController {
     private final EventService eventService;
 
     @GetMapping

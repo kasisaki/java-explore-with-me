@@ -26,7 +26,7 @@ import static ru.practicum.utils.Constants.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/events")
-public class AdminEventController {
+public class EventAdminController {
 
     private final EventService eventService;
 

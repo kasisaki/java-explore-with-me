@@ -20,7 +20,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/users")
-public class AdminUserController {
+public class UserAdminController {
     private final UserService service;
 
     @PostMapping

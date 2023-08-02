@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users/{userId}/requests")
-public class ParticipationRequestController {
+public class RequestPrivateController {
     private final RequestService requestService;
 
     @GetMapping

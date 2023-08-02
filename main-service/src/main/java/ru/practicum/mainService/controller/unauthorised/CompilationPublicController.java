@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/compilations")
 @RequiredArgsConstructor
-public class OpenCompilationController {
+public class CompilationPublicController {
     private final CompilationService compilationService;
 
     @GetMapping
