@@ -83,8 +83,8 @@ public class EventService {
 
         List<Event> events;
         if (onlyAvailable) {
-            events = eventRepository.
-                    getShortEventsAvailableFilter(pageable, text, categoriesId, paid, rangeStart, rangeEnd)
+            events = eventRepository
+                    .getShortEventsAvailableFilter(pageable, text, categoriesId, paid, rangeStart, rangeEnd)
                     .toList();
         } else {
             events = eventRepository
