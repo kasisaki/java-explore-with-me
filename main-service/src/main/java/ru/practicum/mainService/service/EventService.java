@@ -137,7 +137,6 @@ public class EventService {
         );
     }
 
-    @Transactional
     public EventFullDto createEventByUser(Long userId, NewEventDto createEventDto) {
         UserShortDto user = userToShortDto(userRepository.findById(userId).orElseThrow());
         if (createEventDto.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {

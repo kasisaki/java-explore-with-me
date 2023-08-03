@@ -50,8 +50,8 @@ public class StatController {
     }
 
     @PostMapping("/hit")
-    public ResponseEntity<Integer> hit(@Valid @RequestBody StatHitDto hit,
-                                       HttpServletRequest request) {
+    public ResponseEntity<StatHitDto> hit(@Valid @RequestBody StatHitDto hit,
+                                          HttpServletRequest request) {
         log.info(
                 "Append Statistics request:" +
                         "\n     Uri:         {}," +
@@ -61,6 +61,6 @@ public class StatController {
                         "\n     from IP:     {}",
                 hit.getUri(), hit.getApp(), hit.getIp(), hit.getTimestamp(), request.getRemoteAddr());
         service.hit(hit);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return new ResponseEntity<>(service.hit(hit), HttpStatus.CREATED);
     }
 }

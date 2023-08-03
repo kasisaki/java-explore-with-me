@@ -5,13 +5,15 @@ import org.springframework.stereotype.Service;
 import ru.practicum.dto.StatHitDto;
 import ru.practicum.dto.StatResponseDto;
 import ru.practicum.dto.StatResponseShortDto;
-import ru.practicum.server.mapper.StatMapper;
 import ru.practicum.server.repository.StatRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static ru.practicum.server.mapper.StatMapper.statsToDto;
+import static ru.practicum.server.mapper.StatMapper.toStats;
 
 @Service
 @RequiredArgsConstructor
@@ -39,8 +41,8 @@ public class StatService {
         return response;
     }
 
-    public void hit(StatHitDto hit) {
-        repository.save(StatMapper.toStats(hit));
+    public StatHitDto hit(StatHitDto hit) {
+        return statsToDto(repository.save(toStats(hit)));
     }
 
     public Map<Long, Long> getHitsOfEvent(List<String> uris) {

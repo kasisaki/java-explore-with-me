@@ -17,4 +17,16 @@ public class StatMapper {
                 .ip(hit.getIp())
                 .build();
     }
+
+    public static StatHitDto statsToDto(StatData data) {
+        if (data == null) {
+            return null;
+        }
+        return StatHitDto.builder()
+                .app(data.getApp())
+                .uri(data.getUri())
+                .ip(data.getIp())
+                .timestamp(data.getCreated().format(DateTimeFormatter.ofPattern(DATE_PATTERN)))
+                .build();
+    }
 }
