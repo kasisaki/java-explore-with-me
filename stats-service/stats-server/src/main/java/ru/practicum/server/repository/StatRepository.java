@@ -50,7 +50,7 @@ public interface StatRepository extends JpaRepository<StatData, Long> {
             "SELECT new ru.practicum.dto.StatResponseShortDto(s.uri, COUNT(DISTINCT s.ip)) " +
                     "FROM StatData s " +
                     "WHERE s.uri IN (?1) " +
-                    "GROUP BY s.uri, s.ip " +
+                    "GROUP BY  s.ip, s.uri " +
                     "ORDER BY COUNT(s.ip) DESC")
-    List<StatResponseShortDto> getMapOfViewsOfEvents(List<String> uris);
+    List<StatResponseShortDto> getMapOfViewsOfUris(List<String> uris);
 }

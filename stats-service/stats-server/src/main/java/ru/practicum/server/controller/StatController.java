@@ -46,7 +46,7 @@ public class StatController {
     @GetMapping("/stats/hits")
     public ResponseEntity<Map<Long, Long>> getViewsOfEvent(@RequestParam(name = "uris") List<String> uris) {
         System.out.println(uris);
-        return new ResponseEntity<>(service.getHitsOfEvent(uris), HttpStatus.OK);
+        return new ResponseEntity<>(service.getHitsOfUris(uris), HttpStatus.OK);
     }
 
     @PostMapping("/hit")
@@ -60,7 +60,6 @@ public class StatController {
                         "\n     access time: {}," +
                         "\n     from IP:     {}",
                 hit.getUri(), hit.getApp(), hit.getIp(), hit.getTimestamp(), request.getRemoteAddr());
-        service.hit(hit);
         return new ResponseEntity<>(service.hit(hit), HttpStatus.CREATED);
     }
 }

@@ -1,7 +1,9 @@
 package ru.practicum.server.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.dto.StatHitDto;
 import ru.practicum.dto.StatResponseDto;
 import ru.practicum.dto.StatResponseShortDto;
@@ -23,6 +25,10 @@ public class StatService {
 
     public List<StatResponseDto> getStatistics(LocalDateTime start, LocalDateTime end,
                                                Boolean unique, List<String> uris) {
+        if (end.isBefore(start)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "End time cannot be before start time");
+        }
+
         List<StatResponseDto> response;
         if (!unique) {
             if (uris != null && !uris.isEmpty()) {
@@ -45,8 +51,8 @@ public class StatService {
         return statsToDto(repository.save(toStats(hit)));
     }
 
-    public Map<Long, Long> getHitsOfEvent(List<String> uris) {
-        List<StatResponseShortDto> listOfDto = repository.getMapOfViewsOfEvents(uris);
+    public Map<Long, Long> getHitsOfUris(List<String> uris) {
+        List<StatResponseShortDto> listOfDto = repository.getMapOfViewsOfUris(uris);
         return listOfDto.stream()
                 .collect(Collectors.toMap(
                         dto -> Long.parseLong(dto.getUri().split("/")[2]), StatResponseShortDto::getHits)

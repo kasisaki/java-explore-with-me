@@ -62,6 +62,11 @@ public class EventService {
                                                     LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                     Boolean onlyAvailable, SortEventsEnum sort, int from, int size,
                                                     HttpServletRequest request) {
+        statClient.appendStats(new StatHitDto("ewm-events-service",
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN))));
+
         if (rangeStart == null) {
             rangeStart = LocalDateTime.now();
         }
@@ -71,10 +76,7 @@ public class EventService {
         if (rangeStart.isAfter(rangeEnd)) {
             throw new BadRequestException("Invalid range");
         }
-        statClient.appendStats(new StatHitDto(request.getRequestURI(),
-                request.getRemoteAddr(),
-                "ewm-events-service",
-                LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN))));
+
         Pageable pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "eventDate"));
 
         if (sort != null && sort.equals(VIEWS)) {
@@ -100,10 +102,11 @@ public class EventService {
     }
 
     public EventFullDto getEvent(Long eventId, HttpServletRequest request) {
-        statClient.appendStats(new StatHitDto(request.getRequestURI(),
+        statClient.appendStats(new StatHitDto("ewm-main-service",
+                request.getRequestURI(),
                 request.getRemoteAddr(),
-                "ewm-events-service",
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN))));
+
         Event event = eventRepository.findById(eventId).orElseThrow();
         if (!event.getState().equals(PUBLISHED)) {
             throw new ElementNotFoundException("Event with id " + event + " is not found");
@@ -137,6 +140,7 @@ public class EventService {
         );
     }
 
+    @Transactional
     public EventFullDto createEventByUser(Long userId, NewEventDto createEventDto) {
         UserShortDto user = userToShortDto(userRepository.findById(userId).orElseThrow());
         if (createEventDto.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {
