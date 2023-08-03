@@ -14,7 +14,7 @@ import static ru.practicum.utils.Constants.DATE_PATTERN;
 @Data
 public class UpdateEventUserRequest {
 
-    @Size(min = 20, max = 7000)
+    @Size(min = 20, max = 2000)
     private String annotation;
 
     private CategoryDto category;

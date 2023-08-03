@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.dto.StatHitDto;
 import ru.practicum.dto.StatResponseDto;
+import ru.practicum.dto.StatResponseShortDto;
 import ru.practicum.statsServer.mapper.StatMapper;
 import ru.practicum.statsServer.repository.StatRepository;
 
@@ -43,18 +44,10 @@ public class StatService {
     }
 
     public Map<Long, Long> getHitsOfEvent(List<String> uris) {
-        List<StatResponseDto> listOfDto = repository.getMapOfViewsOfEvents(uris);
-        Map<Long, Long> list = listOfDto.stream()
+        List<StatResponseShortDto> listOfDto = repository.getMapOfViewsOfEvents(uris);
+        return listOfDto.stream()
                 .collect(Collectors.toMap(
-                        dto -> Long.parseLong(dto.getUri().split("/")[2]), StatResponseDto::getHits)
+                        dto -> Long.parseLong(dto.getUri().split("/")[2]), StatResponseShortDto::getHits)
                 );
-        System.out.println("the list is " + list);
-        return list;
-    }
-
-    private Long extractNumberFromUri(String uri) {
-        // Assuming the number is always at the end of the uri string
-        String numberString = uri.substring(uri.lastIndexOf('/') + 1);
-        return Long.parseLong(numberString);
     }
 }

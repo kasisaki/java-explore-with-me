@@ -66,7 +66,7 @@ public class RequestService {
                 .requester(user)
                 .status(PENDING)
                 .build();
-        if (!event.getRequestModeration()) {
+        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
             request.setStatus(CONFIRMED);
         }
 

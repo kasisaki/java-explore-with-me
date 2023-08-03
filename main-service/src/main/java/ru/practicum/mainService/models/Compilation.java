@@ -15,18 +15,15 @@ import java.util.Set;
 @AllArgsConstructor
 @Table(name = "compilations")
 public class Compilation {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column
-    private boolean pinned;
-
-    @Column
-    private String title;
-
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "compilation_of_events", joinColumns = {@JoinColumn(name = "compilation_id")},
             inverseJoinColumns = {@JoinColumn(name = "event_id")})
     Set<Event> events;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column
+    private boolean pinned;
+    @Column
+    private String title;
 }

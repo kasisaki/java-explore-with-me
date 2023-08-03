@@ -23,9 +23,9 @@ import ru.practicum.mainService.repositories.RequestRepository;
 import ru.practicum.mainService.repositories.UserRepository;
 import ru.practicum.mainService.utils.enums.EventStatusEnum;
 import ru.practicum.mainService.utils.enums.SortEventsEnum;
+import ru.practicum.mainService.utils.exceptions.BadRequestException;
 import ru.practicum.mainService.utils.exceptions.ConflictException;
 import ru.practicum.mainService.utils.exceptions.ElementNotFoundException;
-import ru.practicum.mainService.utils.exceptions.IllegalStatusException;
 import ru.practicum.statsClient.StatClient;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,13 +39,12 @@ import java.util.stream.Collectors;
 import static ru.practicum.mainService.mappers.EventMapper.*;
 import static ru.practicum.mainService.mappers.LocationMapper.dtoToLocation;
 import static ru.practicum.mainService.mappers.UserMapper.userToShortDto;
-import static ru.practicum.mainService.utils.enums.EventStatusEnum.CANCELED;
-import static ru.practicum.mainService.utils.enums.EventStatusEnum.PENDING;
+import static ru.practicum.mainService.utils.enums.EventStatusEnum.*;
 import static ru.practicum.mainService.utils.enums.RequestStatusEnum.CONFIRMED;
 import static ru.practicum.mainService.utils.enums.RequestStatusEnum.REJECTED;
-import static ru.practicum.mainService.utils.enums.SortEventsEnum.EVENT_DATE;
 import static ru.practicum.mainService.utils.enums.SortEventsEnum.VIEWS;
 import static ru.practicum.utils.Constants.DATE_PATTERN;
+import static ru.practicum.utils.Constants.END_DATE;
 
 @Slf4j
 @Service
@@ -58,9 +57,7 @@ public class EventService {
     private final StatClient statClient;
 
 
-    //Public service
-
-    // TODO информация о каждом событии должна включать в себя количество просмотров и количество уже одобренных заявок на участие
+    // Public service
     public List<EventShortDto> getShortEventsFilter(String text, List<Long> categoriesId, Boolean paid,
                                                     LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                     Boolean onlyAvailable, SortEventsEnum sort, int from, int size,
@@ -68,22 +65,22 @@ public class EventService {
         if (rangeStart == null) {
             rangeStart = LocalDateTime.now();
         }
+        if (rangeEnd == null) {
+            rangeEnd = LocalDateTime.parse(END_DATE, DateTimeFormatter.ofPattern(DATE_PATTERN));
+        }
+        if (rangeStart.isAfter(rangeEnd)) {
+            throw new BadRequestException("Invalid range");
+        }
         statClient.appendStats(new StatHitDto(request.getRequestURI(),
                 request.getRemoteAddr(),
                 "ewm-events-service",
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN))));
-        Pageable pageable;
+        Pageable pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "eventDate"));
 
-        if (sort.equals(VIEWS)) {
+        if (sort != null && sort.equals(VIEWS)) {
             pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "views"));
-        } else if (sort.equals(EVENT_DATE)) {
-            pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "eventDate"));
-        } else {
-            throw new IllegalStatusException("Unknown sort parameter");
         }
-        log.error(rangeStart.toString());
-        log.error("RANGE END");
-        log.error(rangeEnd.toString());
+
         List<Event> events;
         if (onlyAvailable) {
             events = eventRepository.
@@ -100,36 +97,6 @@ public class EventService {
                 .map(EventMapper::eventToShortDto)
                 .map(this::setNumberOfConfirmedRequest)
                 .collect(Collectors.toList()));
-//        List<Event> events;
-//        if (onlyAvailable) {
-//            events = eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd);
-//        } else {
-//            events = eventRepository.getShortEventsFilter(text, categoriesId, paid, rangeStart, rangeEnd);
-//        }
-//
-//        List<EventShortDto> eventDtos = fillViewsForListAndReturn(events
-//                .stream()
-//                .map(EventMapper::eventToShortDto)
-//                .map(this::setNumberOfConfirmedRequest)
-//                .collect(Collectors.toList()));
-//
-//        if (sort == null) {
-//            return eventDtos.stream()
-//                    .skip(from)
-//                    .limit(size)
-//                    .collect(Collectors.toList());
-//        } else if (sort.equals(VIEWS)) {
-//            return eventDtos.stream()
-//                    .sorted(Comparator.comparing(EventShortDto::getViews))
-//                    .skip(from)
-//                    .limit(size)
-//                    .collect(Collectors.toList());
-//        }
-//        return eventDtos.stream()
-//                .sorted(Comparator.comparing(EventShortDto::getEventDate))
-//                .skip(from)
-//                .limit(size)
-//                .collect(Collectors.toList());
     }
 
     public EventFullDto getEvent(Long eventId, HttpServletRequest request) {
@@ -137,19 +104,18 @@ public class EventService {
                 request.getRemoteAddr(),
                 "ewm-events-service",
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_PATTERN))));
-
+        Event event = eventRepository.findById(eventId).orElseThrow();
+        if (!event.getState().equals(PUBLISHED)) {
+            throw new ElementNotFoundException("Event with id " + event + " is not found");
+        }
         return setViewsOfEventAndReturn(
                 setNumberOfConfirmedRequest(
-                        eventToFullEventDto(
-                                eventRepository.findById(eventId).orElseThrow()
-                        )
+                        eventToFullEventDto(event)
                 )
         );
     }
 
-
     // User event services
-
     public List<EventShortDto> getShortEventsOfUser(Long userId, Integer pagingFrom, Integer pagingSize) {
         checkUser(userId);
         List<EventShortDto> events = eventRepository.findAllByInitiatorId(userId, PageRequest.of(pagingFrom, pagingSize))
@@ -175,7 +141,7 @@ public class EventService {
     public EventFullDto createEventByUser(Long userId, NewEventDto createEventDto) {
         UserShortDto user = userToShortDto(userRepository.findById(userId).orElseThrow());
         if (createEventDto.getEventDate().minusHours(2).isBefore(LocalDateTime.now())) {
-            throw new ConflictException("Дата и время на которые намечено событие не может быть раньше, " +
+            throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, " +
                     "чем через два часа от текущего момента ");
         }
         return setViewsOfEventAndReturn(
@@ -288,9 +254,7 @@ public class EventService {
         return fillViewsForListAndReturn(events);
     }
 
-
     // Private methods
-
     private <T extends EventShortDto> List<T> fillViewsForListAndReturn(List<T> events) {
         List<String> listOfUris = events.stream()
                 .map(T::getId)

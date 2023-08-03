@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import ru.practicum.dto.StatResponseDto;
+import ru.practicum.dto.StatResponseShortDto;
 import ru.practicum.statsServer.model.StatData;
 
 import java.time.LocalDateTime;
@@ -46,10 +47,10 @@ public interface StatRepository extends JpaRepository<StatData, Long> {
     List<StatResponseDto> getStatsByUris(LocalDateTime start, LocalDateTime end, List<String> uris);
 
     @Query(value =
-            "SELECT new ru.practicum.dto.StatResponseDto(s.app, s.uri, COUNT(s.ip)) " +
+            "SELECT new ru.practicum.dto.StatResponseShortDto(s.uri, COUNT(DISTINCT s.ip)) " +
                     "FROM StatData s " +
                     "WHERE s.uri IN (?1) " +
-                    "GROUP BY s.app, s.uri " +
+                    "GROUP BY s.uri, s.ip " +
                     "ORDER BY COUNT(s.ip) DESC")
-    List<StatResponseDto> getMapOfViewsOfEvents(List<String> uris);
+    List<StatResponseShortDto> getMapOfViewsOfEvents(List<String> uris);
 }

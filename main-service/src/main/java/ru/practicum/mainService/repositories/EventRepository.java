@@ -34,12 +34,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Optional<Event> findFirstByIdAndInitiatorId(Long eventId, Long userId);
 
-    @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED' AND" +
-            "((lower(e.annotation) LIKE lower(concat('%', :text, '%')) OR " +
-            "(lower(e.description) LIKE lower(concat('%', :text, '%')))) OR :text IS NULL) AND " +
-            "(e.category.id IN :categoriesId OR :categoriesId IS NULL) AND " +
-            "(e.paid = :paid OR :paid IS NULL) AND " +
-            "(e.eventDate BETWEEN :rangeStart AND :rangeEnd OR (:rangeStart IS NULL AND :rangeEnd IS NULL))")
+    @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED' AND " +
+            "lower(e.annotation) LIKE lower(concat('%', :text, '%')) OR " +
+            "lower(e.description) LIKE lower(concat('%', :text, '%')) OR :text IS NULL AND " +
+            "e.category.id IN :categoriesId OR :categoriesId IS NULL AND " +
+            "e.paid = :paid OR :paid IS NULL AND " +
+            "(e.eventDate >= :rangeStart) AND (e.eventDate <= :rangeEnd)")
     Page<Event> getShortEventsFilter(Pageable pageable,
                                      @Param("text") String text,
                                      @Param("categoriesId") List<Long> categoriesId,
@@ -47,12 +47,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                      @Param("rangeStart") LocalDateTime rangeStart,
                                      @Param("rangeEnd") LocalDateTime rangeEnd);
 
-    @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED' AND" +
-            "((lower(e.annotation) LIKE lower(concat('%', :text, '%')) OR " +
-            "(lower(e.description) LIKE lower(concat('%', :text, '%')))) OR :text IS NULL) AND " +
-            "(e.category.id IN :categoriesId OR :categoriesId IS NULL) AND " +
-            "(e.paid = :paid OR :paid IS NULL) AND " +
-            "(e.eventDate BETWEEN :rangeStart AND :rangeEnd OR (:rangeStart IS NULL AND :rangeEnd IS NULL)) AND " +
+    @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED' AND " +
+            "lower(e.annotation) LIKE lower(concat('%', :text, '%')) OR " +
+            "lower(e.description) LIKE lower(concat('%', :text, '%')) OR :text IS NULL AND " +
+            "e.category.id IN :categoriesId OR :categoriesId IS NULL AND " +
+            "e.paid = :paid OR :paid IS NULL AND " +
+            "e.eventDate >= :rangeStart AND e.eventDate <= :rangeEnd AND " +
             "e.participantLimit > e.confirmedRequests")
     Page<Event> getShortEventsAvailableFilter(Pageable pageable,
                                               @Param("text") String text,
@@ -60,4 +60,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                               @Param("paid") Boolean paid,
                                               @Param("rangeStart") LocalDateTime rangeStart,
                                               @Param("rangeEnd") LocalDateTime rangeEnd);
+
+
 }

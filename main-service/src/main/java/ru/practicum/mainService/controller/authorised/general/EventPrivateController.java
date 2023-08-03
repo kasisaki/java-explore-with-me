@@ -54,7 +54,6 @@ public class EventPrivateController {
         return new ResponseEntity<>(eventService.updateEventByUser(userId, eventId, updateDto), HttpStatus.OK);
     }
 
-    // TODO getEventRequest
     @GetMapping("{eventId}/requests")
     public ResponseEntity<List<ParticipationRequestDto>> getUserEventRequests(
             @PathVariable("userId") @Positive Long userId,
@@ -63,7 +62,6 @@ public class EventPrivateController {
         return new ResponseEntity<>(eventService.getEventRequestByUser(userId, eventId), HttpStatus.OK);
     }
 
-    // TODO updateEventRequest
     @PatchMapping("{eventId}/requests")
     public ResponseEntity<EventRequestStatusUpdateResult> updateUserEventParticipationRequest(
             @RequestBody @Valid EventRequestStatusUpdateRequest updateRequestDto,

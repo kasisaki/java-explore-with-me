@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.mainService.dto.compilation.CompilationDto;
 import ru.practicum.mainService.dto.compilation.NewCompilationDto;
+import ru.practicum.mainService.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.mainService.mappers.CompilationMapper;
+import ru.practicum.mainService.models.Compilation;
 import ru.practicum.mainService.models.Event;
 import ru.practicum.mainService.repositories.CompilationsRepository;
 import ru.practicum.mainService.repositories.EventRepository;
@@ -48,22 +50,40 @@ public class CompilationService {
     @Transactional
     public CompilationDto postCompilation(NewCompilationDto newCompilation) {
 
-        CompilationDto dto = compToDto(repository.save(newToComp(newCompilation)));
+        Compilation compilation = newToComp(newCompilation);
+        Set<Long> eventIds = newCompilation.getEvents();
+        if (eventIds != null) {
+            setEvents(eventIds, compilation);
+        }
 
-        setEvents(newCompilation.getEvents(), dto);
-        return dto;
+
+        return compToDto(repository.save(compilation));
     }
 
-    private void setEvents(Set<Long> ids, CompilationDto dto) {
-        Set<Event> events = eventRepository.findAllByIdIn(ids);
-        dto.setEvents(events);
-    }
+    @Transactional
+    public CompilationDto update(Long compId, UpdateCompilationRequest dto) {
+        Compilation compilation = repository.findById(compId).orElseThrow();
+        if (dto.getTitle() != null) {
+            compilation.setTitle(dto.getTitle());
+        }
+        if (dto.getPinned() != null) {
+            compilation.setPinned(dto.getPinned());
+        }
+        Set<Long> eventIds = dto.getEvents();
 
-    public CompilationDto update(Long compId) {
-        return null;
+        if (dto.getEvents() != null) {
+            setEvents(eventIds, compilation);
+        }
+        return compToDto(repository.save(compilation));
     }
 
     public void delete(Long compId) {
         repository.deleteById(compId);
     }
+
+    private void setEvents(Set<Long> ids, Compilation compilation) {
+        Set<Event> events = eventRepository.findAllByIdIn(ids);
+        compilation.setEvents(events);
+    }
+
 }

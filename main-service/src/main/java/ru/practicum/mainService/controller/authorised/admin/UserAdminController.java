@@ -29,7 +29,7 @@ public class UserAdminController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> getUsers(@RequestParam final List<@Positive Long> ids,
+    public ResponseEntity<List<UserDto>> getUsers(@RequestParam(required = false) List<@Positive Long> ids,
                                                   @PositiveOrZero @RequestParam(required = false, defaultValue = "0") Integer from,
                                                   @Positive @RequestParam(required = false, defaultValue = "10") Integer size) {
         return new ResponseEntity<>(service.getUsers(ids, from, size), HttpStatus.OK);
