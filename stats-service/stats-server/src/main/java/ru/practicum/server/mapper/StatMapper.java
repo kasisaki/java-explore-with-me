@@ -1,7 +1,7 @@
-package ru.practicum.statsServer.mapper;
+package ru.practicum.server.mapper;
 
 import ru.practicum.dto.StatHitDto;
-import ru.practicum.statsServer.model.StatData;
+import ru.practicum.server.model.StatData;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

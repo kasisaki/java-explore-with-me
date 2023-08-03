@@ -30,6 +30,9 @@ public class BaseClient {
     }
 
     protected ResponseEntity<Object> get(String path) {
+        System.out.println("OOFAJBIJFBAPIHJSFBOHSFBPAJHSbFP" +
+                "\nJAHBFPAJHSFBPAK:JSFBALKSJFBAK:SFJBA:SKFJBA:SKFJ\n" +
+                "BASKFJBASLFKJABSFLJAHSBFLAJSHFB" + path);
         return get(path, null);
     }
 

@@ -1,11 +1,11 @@
-package ru.practicum.statsServer.repository;
+package ru.practicum.server.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import ru.practicum.dto.StatResponseDto;
 import ru.practicum.dto.StatResponseShortDto;
-import ru.practicum.statsServer.model.StatData;
+import ru.practicum.server.model.StatData;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -1,4 +1,4 @@
-package ru.practicum.statsServer.exception;
+package ru.practicum.server.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.postgresql.util.PSQLException;
@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import ru.practicum.statsServer.exception.errorResponse.ErrorResponse;
+import ru.practicum.server.exception.errorResponse.ErrorResponse;
 
 import static org.springframework.http.HttpStatus.*;
 
