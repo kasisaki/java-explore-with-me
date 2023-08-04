@@ -70,4 +70,18 @@ public class Event {
 
     @Column
     private Integer confirmedRequests;
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", categoryId=" + category.getId() +
+                ", eventDate=" + eventDate +
+                ", initiatorId=" + initiator.getId() +
+                ", title='" + title + '\'' +
+                ", state=" + state +
+                ", views=" + views +
+                ", confirmedRequests=" + confirmedRequests +
+                '}';
+    }
 }
