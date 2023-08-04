@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Data
 @Entity
@@ -26,4 +27,14 @@ public class Compilation {
     private boolean pinned;
     @Column
     private String title;
+
+    @Override
+    public String toString() {
+        return "Compilation{" +
+                "eventIds=" + events.stream().map(Event::getId).collect(Collectors.toList()) +
+                ", id=" + id +
+                ", pinned=" + pinned +
+                ", title='" + title + '\'' +
+                '}';
+    }
 }

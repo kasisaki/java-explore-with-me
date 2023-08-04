@@ -47,13 +47,4 @@ public class StatClient extends BaseClient {
 
         return get("/stats/hits?" + urisString);
     }
-
-    public ResponseEntity<Object> getHitsOfUri(String uri) {
-        String urisString = "";
-        if (!(uri == null) && !uri.isEmpty()) {
-            urisString = "&uris=" + uri;
-        }
-
-        return get("/stats/hits?" + urisString);
-    }
 }

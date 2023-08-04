@@ -2,6 +2,7 @@ package ru.practicum.mainService.controller.unauthorised;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -28,33 +29,33 @@ public class EventPublicController {
     private final EventService eventService;
 
     @GetMapping
-    public ResponseEntity<List<EventShortDto>> getEvents(
-            @RequestParam(required = false) String text,
-            @RequestParam(name = "categories", required = false) List<Long> categoriesId,
-            @RequestParam(required = false) Boolean paid,
-            @RequestParam(required = false)
-            @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeStart,
-            @RequestParam(required = false)
-            @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeEnd,
-            @RequestParam(defaultValue = "false") Boolean onlyAvailable,
-            @RequestParam(required = false) SortEventsEnum sort,
-            @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-            @Positive @RequestParam(defaultValue = "10") int size,
-            HttpServletRequest request) {
+    public ResponseEntity<List<EventShortDto>> getEvents(@Value("${app.name}") final String app,
+                                                         @RequestParam(required = false) String text,
+                                                         @RequestParam(name = "categories", required = false) List<Long> categoriesId,
+                                                         @RequestParam(required = false) Boolean paid,
+                                                         @RequestParam(required = false)
+                                                         @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeStart,
+                                                         @RequestParam(required = false)
+                                                         @DateTimeFormat(pattern = DATE_PATTERN) LocalDateTime rangeEnd,
+                                                         @RequestParam(defaultValue = "false") Boolean onlyAvailable,
+                                                         @RequestParam(required = false) SortEventsEnum sort,
+                                                         @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+                                                         @Positive @RequestParam(defaultValue = "10") int size,
+                                                         HttpServletRequest request) {
 
-        log.info("Get events with \ntext: {}, \ncategories: {}, \npaid: {}, \nrangeStart: {}, \nrangeEnd: {}, " +
-                        "\nonlyAvailable: {}, \nsort: {}, \nfrom: {}, \nsize: {}", text, categoriesId, paid, rangeStart, rangeEnd,
-                onlyAvailable, sort, from, size);
+        log.info("Get events in {} with \ntext: {}, \ncategories: {}, \npaid: {}, \nrangeStart: {}, \nrangeEnd: {}, " +
+                        "\nonlyAvailable: {}, \nsort: {}, \nfrom: {}, \nsize: {}", app, text, categoriesId, paid,
+                rangeStart, rangeEnd, onlyAvailable, sort, from, size);
 
-        return ResponseEntity.status(200).body(eventService.getShortEventsFilter(text, categoriesId, paid, rangeStart,
-                rangeEnd, onlyAvailable, sort, from, size, request));
+        return ResponseEntity.status(200).body(eventService.getShortEventsFilter(app, text, categoriesId, paid,
+                rangeStart, rangeEnd, onlyAvailable, sort, from, size, request));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EventFullDto> getEvent(
-            @PathVariable("id") @Positive Long eventId, HttpServletRequest request) {
+    public ResponseEntity<EventFullDto> getEvent(@Value("${app.name}") final String app,
+                                                 @PathVariable("id") @Positive Long eventId, HttpServletRequest request) {
         log.info("Get event request with id: {}, request: {}", eventId, request);
 
-        return ResponseEntity.status(200).body(eventService.getEvent(eventId, request));
+        return ResponseEntity.status(200).body(eventService.getEvent(app, eventId, request));
     }
 }

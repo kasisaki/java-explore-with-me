@@ -4,7 +4,13 @@ import ru.practicum.mainService.dto.category.CategoryDto;
 import ru.practicum.mainService.dto.category.NewCategoryDto;
 import ru.practicum.mainService.models.Category;
 
+
 public class CategoryMapper {
+
+    private CategoryMapper() {
+        throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     public static Category mapNewCategoryToCategory(NewCategoryDto categoryDto) {
         return Category.builder()
                 .name(categoryDto.getName())

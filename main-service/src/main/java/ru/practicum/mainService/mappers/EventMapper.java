@@ -1,6 +1,5 @@
 package ru.practicum.mainService.mappers;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import ru.practicum.mainService.dto.event.EventFullDto;
 import ru.practicum.mainService.dto.event.EventShortDto;
@@ -22,9 +21,12 @@ import static ru.practicum.mainService.utils.enums.EventStatusEnum.*;
 import static ru.practicum.mainService.utils.enums.StateActionEnum.*;
 
 
-@Data
 @Slf4j
 public class EventMapper {
+
+    private EventMapper() {
+        throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
 
     public static EventFullDto eventToFullEventDto(Event event) {
         if (event == null) {

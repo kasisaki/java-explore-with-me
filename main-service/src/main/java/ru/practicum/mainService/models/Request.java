@@ -33,4 +33,15 @@ public class Request {
     @Column
     @Enumerated(EnumType.STRING)
     private RequestStatusEnum status;
+
+    @Override
+    public String toString() {
+        return "Request{" +
+                "id=" + id +
+                ", created on=" + created +
+                ", eventId=" + event.getId() +
+                ", requesterId=" + requester.getId() +
+                ", status=" + status +
+                '}';
+    }
 }

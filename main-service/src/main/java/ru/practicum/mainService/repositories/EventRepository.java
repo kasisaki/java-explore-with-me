@@ -32,7 +32,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Page<Event> findAllByInitiatorId(Long userId, Pageable pageable);
 
-    Optional<Event> findFirstByIdAndInitiatorId(Long eventId, Long userId);
+    Optional<Event> findByIdAndInitiatorId(Long eventId, Long userId);
 
     @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED' AND " +
             "lower(e.annotation) LIKE lower(concat('%', :text, '%')) OR " +

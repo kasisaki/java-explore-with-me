@@ -6,6 +6,11 @@ import ru.practicum.mainService.models.Request;
 import ru.practicum.mainService.models.User;
 
 public class RequestMapper {
+
+    private RequestMapper() {
+        throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     public static Request dtoToRequest(ParticipationRequestDto dto, User user, Event event) {
         if (dto == null) return null;
 

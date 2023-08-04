@@ -20,5 +20,8 @@ logging:
 stats-server:
   url: http://localhost:9090
 
+app:
+  name: ewm-main-service
+
 server:
   port: 8080

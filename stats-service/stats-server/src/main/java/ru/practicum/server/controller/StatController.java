@@ -45,7 +45,6 @@ public class StatController {
 
     @GetMapping("/stats/hits")
     public ResponseEntity<Map<Long, Long>> getViewsOfEvent(@RequestParam(name = "uris") List<String> uris) {
-        System.out.println(uris);
         return new ResponseEntity<>(service.getHitsOfUris(uris), HttpStatus.OK);
     }
 
