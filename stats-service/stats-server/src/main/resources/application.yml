@@ -11,7 +11,7 @@ spring:
     driverClassName: org.postgresql.Driver
     username: postgres
     password: password
-    url: jdbc:postgresql://localhost:5432/psql_ewm
+    url: jdbc:postgresql://localhost:5432/stats-db
   sql:
     init:
       mode: always
@@ -22,11 +22,10 @@ logging:
         orm:
           jpa:
             JpaTransactionManager: DEBUG
-            nodeValue: DEBUG
+            nodeValue: INFO
         transaction:
-          interceptor: TRACE
+          interceptor: DEBUG
           nodeValue: INFO
-        boot: INFO
 
 server:
   port: 9090
