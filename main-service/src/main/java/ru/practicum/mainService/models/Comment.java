@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.mainService.utils.enums.RequestStatusEnum;
+import ru.practicum.mainService.utils.enums.StatusEnum;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -35,7 +35,7 @@ public class Comment {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private RequestStatusEnum status;
+    private StatusEnum status;
 
     @Override
     public String toString() {

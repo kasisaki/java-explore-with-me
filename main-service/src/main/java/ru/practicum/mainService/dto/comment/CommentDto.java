@@ -1,4 +1,4 @@
-package ru.practicum.mainService.dto.request;
+package ru.practicum.mainService.dto.comment;
 
 import lombok.Data;
 import ru.practicum.mainService.utils.enums.StatusEnum;
@@ -6,10 +6,11 @@ import ru.practicum.mainService.utils.enums.StatusEnum;
 import java.time.LocalDateTime;
 
 @Data
-public class ParticipationRequestDto {
+public class CommentDto {
+    private Long id;
+    private String text;
     private LocalDateTime created;
     private Long event;
-    private Long id;
-    private Long requester;
+    private Long commenter;
     private StatusEnum status;
 }

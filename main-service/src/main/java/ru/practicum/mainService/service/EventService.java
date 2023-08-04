@@ -39,10 +39,10 @@ import static ru.practicum.mainService.mappers.LocationMapper.dtoToLocation;
 import static ru.practicum.mainService.mappers.UserMapper.userToShortDto;
 import static ru.practicum.mainService.utils.DateUtils.getDatePatterned;
 import static ru.practicum.mainService.utils.enums.EventStatusEnum.*;
-import static ru.practicum.mainService.utils.enums.RequestStatusEnum.CONFIRMED;
-import static ru.practicum.mainService.utils.enums.RequestStatusEnum.REJECTED;
 import static ru.practicum.mainService.utils.enums.SortEventsEnum.COMMENTS;
 import static ru.practicum.mainService.utils.enums.SortEventsEnum.VIEWS;
+import static ru.practicum.mainService.utils.enums.StatusEnum.CONFIRMED;
+import static ru.practicum.mainService.utils.enums.StatusEnum.REJECTED;
 import static ru.practicum.utils.Constants.DATE_PATTERN;
 import static ru.practicum.utils.Constants.END_DATE;
 
