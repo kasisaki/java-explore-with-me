@@ -41,6 +41,7 @@ import static ru.practicum.mainService.utils.DateUtils.getDatePatterned;
 import static ru.practicum.mainService.utils.enums.EventStatusEnum.*;
 import static ru.practicum.mainService.utils.enums.RequestStatusEnum.CONFIRMED;
 import static ru.practicum.mainService.utils.enums.RequestStatusEnum.REJECTED;
+import static ru.practicum.mainService.utils.enums.SortEventsEnum.COMMENTS;
 import static ru.practicum.mainService.utils.enums.SortEventsEnum.VIEWS;
 import static ru.practicum.utils.Constants.DATE_PATTERN;
 import static ru.practicum.utils.Constants.END_DATE;
@@ -80,6 +81,8 @@ public class EventService {
 
         if (sort != null && sort.equals(VIEWS)) {
             pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "views"));
+        } else if (sort != null && sort.equals(COMMENTS)) {
+            pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "comments"));
         }
 
         List<Event> events;
@@ -302,7 +305,7 @@ public class EventService {
 
 
         Object bodyWithViews = statClient.getHitsOfUris(listOfUris).getBody();
-        Map<Long, Long> mapOfViews = new HashMap<Long, Long>();
+        Map<Long, Long> mapOfViews = new HashMap<>();
 
         eventIds.forEach(id -> {
             if (bodyWithViews instanceof LinkedHashMap && !eventIds.isEmpty()) {
