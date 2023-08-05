@@ -1,19 +1,22 @@
 package ru.practicum.mainService.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.mainService.utils.enums.StatusEnum;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+
+import static ru.practicum.utils.Constants.DATE_PATTERN;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "comments")
+@Entity
+@Table(name = "comments")
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +26,12 @@ public class Comment {
     private String text;
 
     @Column
+    @JsonFormat(pattern = DATE_PATTERN)
     private LocalDateTime created;
+
+    @Column
+    @JsonFormat(pattern = DATE_PATTERN)
+    private LocalDateTime updated;
 
     @ManyToOne
     @JoinColumn(name = "event_id")
@@ -33,13 +41,6 @@ public class Comment {
     @JoinColumn(name = "commenter_id")
     private User commenter;
 
-    @Column
-    @Enumerated(EnumType.STRING)
-    private StatusEnum status;
-
-    @Column
-    private Integer inappropriateFlags;
-
     @Override
     public String toString() {
         return "Request{" +
@@ -47,7 +48,6 @@ public class Comment {
                 ", created on=" + created +
                 ", eventId=" + event.getId() +
                 ", requesterId=" + commenter.getId() +
-                ", status=" + status +
                 '}';
     }
 }

@@ -5,36 +5,41 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.mainService.dto.request.ParticipationRequestDto;
-import ru.practicum.mainService.service.RequestService;
+import ru.practicum.mainService.dto.comment.CommentDto;
+import ru.practicum.mainService.dto.comment.NewCommentDto;
+import ru.practicum.mainService.service.CommentService;
 
 import javax.validation.constraints.Positive;
-import java.util.List;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/users/{userId}/events/{eventId}/comments")
+@RequestMapping("/events/{eventId}/users/{userId}/comments")
 public class CommentPrivateController {
-    private final RequestService requestService;
-
-    @GetMapping
-    public ResponseEntity<List<ParticipationRequestDto>> findAllCommentsByEventId(@PathVariable @Positive Long userId) {
-        log.info("Find all participation requests of User with id={}", userId);
-        return new ResponseEntity<>(requestService.findAllByUserId(userId), HttpStatus.OK);
-    }
+    private final CommentService commentService;
 
     @PostMapping
-    public ResponseEntity<ParticipationRequestDto> createComment(@PathVariable @Positive Long userId,
-                                                                 @RequestParam @Positive Long eventId) {
+    public ResponseEntity<CommentDto> createComment(@RequestBody NewCommentDto dto,
+                                                    @PathVariable @Positive Long userId,
+                                                    @PathVariable @Positive Long eventId) {
         log.info("Create comment from user with id={}, for event with id={}", userId, eventId);
-        return new ResponseEntity<>(requestService.createRequest(userId, eventId), HttpStatus.CREATED);
+        return new ResponseEntity<>(commentService.createComment(userId, eventId, dto), HttpStatus.CREATED);
     }
 
-    @PatchMapping("/{commentId}/cancel")
-    public ResponseEntity<ParticipationRequestDto> updateComment(@PathVariable @Positive Long userId,
-                                                                 @PathVariable @Positive Long commentId) {
-        log.info("User with id={} requested cancelation of request with id={}", userId, commentId);
-        return new ResponseEntity<>(requestService.updateRequest(userId, commentId), HttpStatus.OK);
+    @GetMapping("/{commentId}")
+    public ResponseEntity<CommentDto> findByCommentId(@PathVariable @Positive Long userId,
+                                                      @PathVariable @Positive Long eventId,
+                                                      @PathVariable @Positive Long commentId) {
+        log.info("Find all participation requests of User with id={}", userId);
+        return new ResponseEntity<>(commentService.findByCommentId(userId, eventId, commentId), HttpStatus.OK);
+    }
+
+    @PatchMapping("/{commentId}/update")
+    public ResponseEntity<CommentDto> updateComment(@RequestBody NewCommentDto dto,
+                                                    @PathVariable @Positive Long userId,
+                                                    @PathVariable @Positive Long eventId,
+                                                    @PathVariable @Positive Long commentId) {
+        log.info("User with id={} requested deletion of request with id={}", userId, commentId);
+        return new ResponseEntity<>(commentService.updateComment(userId, eventId, commentId, dto), HttpStatus.OK);
     }
 }
