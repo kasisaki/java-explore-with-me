@@ -30,7 +30,7 @@ public class CommentMapper {
         if (dto == null) return null;
 
         comment.setUpdated(LocalDateTime.now());
-        comment.setText(comment.getText());
+        comment.setText(dto.getText());
         return comment;
     }
 
@@ -42,6 +42,7 @@ public class CommentMapper {
         dto.setCommenter(comment.getCommenter().getId());
         dto.setEvent(comment.getEvent().getId());
         dto.setCreated(comment.getCreated());
+        dto.setUpdated(comment.getUpdated());
         dto.setId(comment.getId());
         return dto;
     }

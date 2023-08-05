@@ -25,5 +25,5 @@ public class EventFullDto extends EventShortDto {
     private String description;
     private Integer participantLimit = 0;
     private Location location;
-    private Boolean commentsDisabled = false;
+    private Boolean commentsDisabled;
 }

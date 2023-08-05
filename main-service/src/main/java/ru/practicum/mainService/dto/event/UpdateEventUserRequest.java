@@ -38,6 +38,6 @@ public class UpdateEventUserRequest {
 
     private StateActionEnum stateAction;
 
-    private Boolean disableComments = false;
+    private Boolean commentsDisabled;
 
 }

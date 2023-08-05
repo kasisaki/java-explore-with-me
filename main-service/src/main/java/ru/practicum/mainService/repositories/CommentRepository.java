@@ -20,10 +20,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     Page<Comment> findAllByEventId(Long eventId, Pageable pageable);
 
     @Query("SELECT e FROM Comment e WHERE " +
-            "lower(e.text) LIKE lower(concat('%', :searchText, '%')) OR :searchText IS NULL AND " +
+            "(e.created >= :rangeStart) AND (e.created <= :rangeEnd) AND" +
+            "(lower(e.text) LIKE lower(concat('%', :searchText, '%')) OR :searchText IS NULL) AND " +
             "e.event.id IN :eventIds OR :eventIds IS NULL AND " +
-            "e.commenter.id IN :userIds OR :userIds IS NULL AND " +
-            "(e.created >= :rangeStart) AND (e.created <= :rangeEnd)")
+            "e.commenter.id IN :userIds OR :userIds IS NULL")
     Page<Comment> getCommentsFilter(Pageable pageable,
                                     @Param("searchText") String text,
                                     @Param("eventIds") List<Long> eventIds,

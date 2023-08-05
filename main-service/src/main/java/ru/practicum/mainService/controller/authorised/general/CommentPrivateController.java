@@ -42,4 +42,13 @@ public class CommentPrivateController {
         log.info("User with id={} requested deletion of request with id={}", userId, commentId);
         return new ResponseEntity<>(commentService.updateComment(userId, eventId, commentId, dto), HttpStatus.OK);
     }
+
+    @DeleteMapping("/{commentId}/delete")
+    public ResponseEntity<Void> deleteComment(@PathVariable @Positive Long userId,
+                                              @PathVariable @Positive Long eventId,
+                                              @PathVariable @Positive Long commentId) {
+        log.info("User with id={} requested deletion of request with id={}", userId, commentId);
+        commentService.deleteCommentByUser(commentId, userId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

@@ -60,7 +60,7 @@ public class CommentService {
                 () -> new ElementNotFoundException("Event does not exist")
         );
 
-        if (event.getDisableCommenting()) {
+        if (event.getCommentsDisabled()) {
             throw new ConflictException("Event with id=" + eventId + "does not allow comments");
         }
 
@@ -77,7 +77,7 @@ public class CommentService {
 
     @Transactional
     public CommentDto updateComment(Long userId, Long eventId, Long commentId, NewCommentDto dto) {
-        if (commentRepository.existsByIdAndCommenterId(commentId, userId)) {
+        if (!commentRepository.existsByIdAndCommenterId(commentId, userId)) {
             throw new ConflictException("User with id=" + userId + " has not created the comment with id=" +
                     commentId + " and so cannot update it");
         }
@@ -118,11 +118,22 @@ public class CommentService {
         }
     }
 
-    public void deleteComment(Long commentId) {
-        if (!commentRepository.existsById(commentId)) {
-            throw new ElementNotFoundException("Comment " + commentId + "does not exist");
+    public void deleteCommentByUser(Long commentId, Long userId) {
+        if (userId != null) {
+            checkUserExistsOrThrow(userId);
+            if (!commentRepository.existsById(commentId)) {
+                throw new ElementNotFoundException("Comment " + commentId + " does not exist");
+            }
+            if (!commentRepository.existsByIdAndCommenterId(commentId, userId)) {
+                throw new ConflictException("User with id=" + userId + " has not created the comment with id=" +
+                        commentId + " and so cannot delete it");
+            }
         }
         commentRepository.deleteById(commentId);
+    }
+
+    public void deleteComment(Long commentId) {
+        deleteCommentByUser(commentId, null);
     }
 
     public List<CommentDto> getCommentsFiltered(String text, List<Long> eventIds, List<Long> userIds,
