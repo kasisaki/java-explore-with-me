@@ -39,6 +39,8 @@ public class NewEventDto {
 
     private Boolean paid = false;
 
+    private Boolean disableComments = false;
+
     @PositiveOrZero
     private Integer participantLimit;
 

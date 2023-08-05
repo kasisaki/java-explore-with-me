@@ -15,11 +15,9 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findAllByCommenterId(Long commenterId);
 
-    boolean existsByCommenterIdAndEventId(Long commenterId, Long eventId);
+    boolean existsByIdAndCommenterId(Long id, Long commenterId);
 
-    List<Comment> findAllByIdIn(List<Long> requestIds);
-
-    List<Comment> findAllByEventId(Long eventId);
+    Page<Comment> findAllByEventId(Long eventId, Pageable pageable);
 
     @Query("SELECT e FROM Comment e WHERE " +
             "lower(e.text) LIKE lower(concat('%', :searchText, '%')) OR :searchText IS NULL AND " +

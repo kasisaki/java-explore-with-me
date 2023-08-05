@@ -42,9 +42,9 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
-    public List<CommentShortDto> findAllByEventId(Long eventId) {
+    public List<CommentShortDto> findAllByEventId(Long eventId, Integer from, Integer size) {
         checkEventExistsOrThrow(eventId);
-        return commentRepository.findAllByEventId(eventId)
+        return commentRepository.findAllByEventId(eventId, PageRequest.of(from, size))
                 .stream()
                 .map(CommentMapper::commentToShortDto)
                 .collect(Collectors.toList());
@@ -60,6 +60,10 @@ public class CommentService {
                 () -> new ElementNotFoundException("Event does not exist")
         );
 
+        if (event.getDisableCommenting()) {
+            throw new ConflictException("Event with id=" + eventId + "does not allow comments");
+        }
+
         if (!event.getState().equals(PUBLISHED)) {
             throw new ConflictException("Cannot create comment for unpublished events");
         }
@@ -73,25 +77,21 @@ public class CommentService {
 
     @Transactional
     public CommentDto updateComment(Long userId, Long eventId, Long commentId, NewCommentDto dto) {
+        if (commentRepository.existsByIdAndCommenterId(commentId, userId)) {
+            throw new ConflictException("User with id=" + userId + " has not created the comment with id=" +
+                    commentId + " and so cannot update it");
+        }
+
         Comment comment = commentRepository.findById(commentId).orElseThrow(
                 () -> new ElementNotFoundException("Comment does not exist")
         );
 
-        if (!comment.getCommenter().getId().equals(userId)) {
-            throw new ConflictException("User with id=" + userId + " has not created the comment with id=" + commentId);
-        }
-
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new ElementNotFoundException("User does not exist")
-        );
-
-        Event event = eventRepository.findById(eventId).orElseThrow(
-                () -> new ElementNotFoundException("Event does not exist")
-        );
+        checkUserExistsOrThrow(userId);
+        checkEventExistsOrThrow(eventId);
 
         return commentToDto(
                 commentRepository.save(
-                        updateToComment(comment, user, event, dto)
+                        updateToComment(comment, dto)
                 )
         );
     }
@@ -137,6 +137,6 @@ public class CommentService {
                 .getCommentsFilter(pageable, text, eventIds, userIds, rangeStart, rangeEnd)
                 .toList();
 
-        return null;
+        return comments.stream().map(CommentMapper::commentToDto).collect(Collectors.toList());
     }
 }

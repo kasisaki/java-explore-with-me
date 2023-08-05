@@ -75,7 +75,7 @@ public class Event {
     private Integer comments;
 
     @Column
-    private Boolean disableComments = false; //default value
+    private Boolean disableCommenting = false; //default value
 
     @Override
     public String toString() {

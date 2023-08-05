@@ -26,7 +26,7 @@ public class CommentMapper {
                 .build();
     }
 
-    public static Comment updateToComment(Comment comment, User user, Event event, NewCommentDto dto) {
+    public static Comment updateToComment(Comment comment, NewCommentDto dto) {
         if (dto == null) return null;
 
         comment.setUpdated(LocalDateTime.now());
