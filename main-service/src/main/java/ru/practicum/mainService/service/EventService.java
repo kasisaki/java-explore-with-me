@@ -30,7 +30,6 @@ import ru.practicum.statsClient.StatClient;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,12 +37,12 @@ import static ru.practicum.mainService.mappers.EventMapper.*;
 import static ru.practicum.mainService.mappers.LocationMapper.dtoToLocation;
 import static ru.practicum.mainService.mappers.UserMapper.userToShortDto;
 import static ru.practicum.mainService.utils.DateUtils.getDatePatterned;
+import static ru.practicum.mainService.utils.DateUtils.handleDateRange;
 import static ru.practicum.mainService.utils.enums.EventStatusEnum.*;
-import static ru.practicum.mainService.utils.enums.RequestStatusEnum.CONFIRMED;
-import static ru.practicum.mainService.utils.enums.RequestStatusEnum.REJECTED;
+import static ru.practicum.mainService.utils.enums.SortEventsEnum.COMMENTS;
 import static ru.practicum.mainService.utils.enums.SortEventsEnum.VIEWS;
-import static ru.practicum.utils.Constants.DATE_PATTERN;
-import static ru.practicum.utils.Constants.END_DATE;
+import static ru.practicum.mainService.utils.enums.StatusEnum.CONFIRMED;
+import static ru.practicum.mainService.utils.enums.StatusEnum.REJECTED;
 
 @Slf4j
 @Service
@@ -66,20 +65,14 @@ public class EventService {
                 request.getRemoteAddr(),
                 getDatePatterned()));
 
-        if (rangeStart == null) {
-            rangeStart = LocalDateTime.now();
-        }
-        if (rangeEnd == null) {
-            rangeEnd = LocalDateTime.parse(END_DATE, DateTimeFormatter.ofPattern(DATE_PATTERN));
-        }
-        if (rangeStart.isAfter(rangeEnd)) {
-            throw new BadRequestException("Invalid range");
-        }
+        handleDateRange(rangeStart, rangeEnd);
 
         Pageable pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "eventDate"));
 
         if (sort != null && sort.equals(VIEWS)) {
             pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "views"));
+        } else if (sort != null && sort.equals(COMMENTS)) {
+            pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "comments"));
         }
 
         List<Event> events;
@@ -302,7 +295,7 @@ public class EventService {
 
 
         Object bodyWithViews = statClient.getHitsOfUris(listOfUris).getBody();
-        Map<Long, Long> mapOfViews = new HashMap<Long, Long>();
+        Map<Long, Long> mapOfViews = new HashMap<>();
 
         eventIds.forEach(id -> {
             if (bodyWithViews instanceof LinkedHashMap && !eventIds.isEmpty()) {

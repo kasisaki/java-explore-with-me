@@ -2,13 +2,13 @@ package ru.practicum.mainService.utils.enums;
 
 import ru.practicum.mainService.utils.exceptions.IllegalStatusException;
 
-public enum RequestStatusEnum {
+public enum StatusEnum {
     PENDING,
     CONFIRMED,
     REJECTED,
     CANCELED;
 
-    public static RequestStatusEnum ofString(String str) {
+    public static StatusEnum ofString(String str) {
         switch (str) {
             case "REJECTED":
                 return REJECTED;

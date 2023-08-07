@@ -78,6 +78,9 @@ public class EventMapper {
         if (updateDto.getPaid() != null) {
             event.setPaid(updateDto.getPaid());
         }
+        if (updateDto.getCommentsDisabled() != null) {
+            event.setCommentsDisabled(updateDto.getCommentsDisabled());
+        }
         if (updateDto.getParticipantLimit() != null) {
             event.setParticipantLimit(updateDto.getParticipantLimit());
         }
@@ -153,6 +156,12 @@ public class EventMapper {
             event.setPaid(false);
         } else {
             event.setPaid(newEvent.getPaid());
+        }
+
+        if (newEvent.getCommentsDisabled() == null) {
+            event.setCommentsDisabled(false);
+        } else {
+            event.setCommentsDisabled(newEvent.getCommentsDisabled());
         }
 
         return event;

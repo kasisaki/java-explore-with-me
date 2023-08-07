@@ -65,5 +65,12 @@ public class ErrorHandler {
         return new ResponseEntity<>(new ErrorResponse(httpStatus.value(), e.getMessage()), httpStatus);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<ErrorResponse> catchIllegalArgumentException(final IllegalArgumentException e) {
+        log.info(e.getMessage(), e);
+        HttpStatus httpStatus = BAD_REQUEST;
+        return new ResponseEntity<>(new ErrorResponse(httpStatus.value(), e.getMessage()), httpStatus);
+    }
+
 
 }

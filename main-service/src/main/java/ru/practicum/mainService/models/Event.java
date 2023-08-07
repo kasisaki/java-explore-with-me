@@ -52,7 +52,7 @@ public class Event {
     private Integer participantLimit;
 
     @Column
-    private Boolean requestModeration = true; //default value
+    private Boolean requestModeration; //default value
 
     @Column
     private String title;
@@ -70,6 +70,12 @@ public class Event {
 
     @Column
     private Integer confirmedRequests;
+
+    @Column
+    private Integer comments;
+
+    @Column
+    private Boolean commentsDisabled; //default value
 
     @Override
     public String toString() {

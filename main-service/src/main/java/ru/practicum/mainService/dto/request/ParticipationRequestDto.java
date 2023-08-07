@@ -1,7 +1,7 @@
 package ru.practicum.mainService.dto.request;
 
 import lombok.Data;
-import ru.practicum.mainService.utils.enums.RequestStatusEnum;
+import ru.practicum.mainService.utils.enums.StatusEnum;
 
 import java.time.LocalDateTime;
 
@@ -11,5 +11,5 @@ public class ParticipationRequestDto {
     private Long event;
     private Long id;
     private Long requester;
-    private RequestStatusEnum status;
+    private StatusEnum status;
 }
