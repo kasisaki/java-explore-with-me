@@ -1,6 +1,2 @@
 # java-explore-with-me
-Template repository for ExploreWithMe project.
-
-
-PULL Request (Feature add comments)
-https://github.com/kasisaki/java-explore-with-me/pull/5
+Cервис-афиша, который позволяет публиковать информацию о событиях от выставки до похода в кино, а также позволяет собрать компанию для участия в нём.
